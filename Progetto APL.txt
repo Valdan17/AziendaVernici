@@ -1,0 +1,42 @@
+Un'azienda produttrice di vernici vuole realizzare un software per la gestione della produzione e degli ordini dei clienti.
+
+L'azienda, a partire da dei COLORI che rappresentano la materia prima grezza, produce delle VERNICI che sono invece il prodotto destinato alla vendita.
+
+ - Ogni COLORE è caratterizzato dal nome (rosso, giallo, nero, ...) e dalla quantità disponibile in Kg. 
+
+ - Ogni VERNICE è caratterizzata dal nome, etichetta (?), dalla quantità in Kg disponibile in magazzino e dalla sua composizione (es. VERNICE ROSSO CANDY: 70% rosso, 20% bianco, 10% nero). 
+
+L'applicazione si compone di diversi moduli. 
+
+1. Il primo è il modulo CLIENT PER AMMINISTRATORE, che consenta: 
+	a) login/registrazione (?), 
+	b) aggiungi nuovo COLORE (all'aggiunta nel DB default: 0Kg), 
+	c) rimuovi COLORE, 
+	d) aggiungi VERNICE (all'aggiunta nel DB default: 0Kg), 
+	e) rimuovi VERNICE, 
+	f) Aggiorna q.tà COLORE,
+	g) Aggiorna q.tà VERNICE. 
+
+2. Un modulo CLIENT PER I CUSTOMER che consenta: 
+	a) login/registrazione cliente, 
+	b) visualizza magazzino delle vernici già disponibili all'acquisto e le rispettive quantità in Kg, 
+	c) effettua ordine di una vernice, già disponibile o meno, 
+	d) visualizza ordini precedenti. 
+
+Entrambi i moduli CLIENT ADMIN e CLIENT CUSTOMER si interfacciano con un modulo SERVER che elabora ogni richiesta ricevuta effettuando le operazioni sul DB MySql. 
+
+3. Inoltre il server si occupa di: 
+	a. Gestire l'aggiornamento delle q.tà di vernici: quando un admin aggiorna la quantità di una vernice, il server verifica prima che siano dispnibili le rispettive quantità di colori (es. 10Kg di ROSSO CANDY: 7Kg di Rosso, 2Kg di Bianco, 1Kg di Nero). 
+	b. gestire le ordinazioni dei clienti: quando il cliente acquista una certa quantità in Kg di una vernice, il server verifica che tale quantità sia effettivamente disponibile. In caso positivo, l'ordine si ritiene completato e la quantità di vernice viene ridotta dal DB. Viceversa, se la quantità non è sufficiente, il server considera l'ordine come "pendente". Il client ADMIN potrà visualizzare le ordinazioni pendenti così da poter produrre le vernici mancanti. All'aggiornamento di ogni quantità di vernice, il server controlla se può soddisfare una richiesta pendente e in tal caso completa l'ordine del cliente.  
+
+AGGIUNTE:
+ - modifica ed eliminazione di un colore
+	- se un colore viene eliminato, gli ordini pendenti relativi a vernici con quel colore, vengono cancellati (e viene inviata una notifica?)
+
+
+
+
+
+
+
+
