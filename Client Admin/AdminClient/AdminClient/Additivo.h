@@ -10,7 +10,7 @@ public:
 	Additivo(Additivo& a);
 
 	/* Altri metodi */
-	virtual void stampa() const;	// implementazione del metodo astratto
+	virtual void stampa() const override;	// implementazione del metodo astratto
 
 	void whoAmI() const;
 };

@@ -25,7 +25,7 @@ public:
 	void stampaFormula() const;
 
 	/* Altri metodi */
-	virtual void stampa() const;
+	virtual void stampa() const override;
 	virtual json toJson() const;
 	void whoAmI() const;
 };

@@ -7,7 +7,6 @@ public:
 	/* Costruttori */
 	Componente(string nome);
 	Componente(string nome, float quantitaKg);
-	Componente(Componente& p);
 
 	/* Altri metodi */
 	virtual void stampa() const = 0;	// VIRTUALE

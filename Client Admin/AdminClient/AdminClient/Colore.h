@@ -10,7 +10,6 @@ public:
 	Colore(Colore& c);
 
 	/* Altri metodi */
-	virtual void stampa() const;	// implementazione del metodo astratto
-
+	void stampa() const override;	// implementazione del metodo astratto
 	void whoAmI() const;
 };

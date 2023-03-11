@@ -15,11 +15,6 @@ ProdottoIndustriale::ProdottoIndustriale(string nome, float quantitaKg) {
 	this->quantitaKg = quantitaKg;
 }
 
-ProdottoIndustriale::ProdottoIndustriale(ProdottoIndustriale& p) {
-	this->nome = p.nome;
-	this->quantitaKg = p.quantitaKg;
-}
-
 
 /* Metodi per l'attributo Nome */
 string ProdottoIndustriale::getNome() const {

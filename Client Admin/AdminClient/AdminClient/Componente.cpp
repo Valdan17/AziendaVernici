@@ -10,7 +10,6 @@ Componente::Componente(string nome) : ProdottoIndustriale(nome) {}
 
 Componente::Componente(string nome, float quantitaKg) : ProdottoIndustriale(nome, quantitaKg) {}
 
-Componente::Componente(Componente& c) : ProdottoIndustriale(c) {}
 
 /* Altre funzioni */
 void Componente::whoAmI() const{

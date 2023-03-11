@@ -16,7 +16,6 @@ public:
 	/* Costruttori */
 	ProdottoIndustriale(string nome);
 	ProdottoIndustriale(string nome, float quantitaKg);
-	ProdottoIndustriale(ProdottoIndustriale& p);
 
 	/* Metodi per l'attributo nome */
 	string getNome() const;
