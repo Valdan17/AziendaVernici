@@ -31,7 +31,23 @@ void Vernice::stampa() const {
 }
 
 json Vernice::toJson() const {
-	json j;
+	json j, componente;
+	vector<json> colori, additivi;
+
+	j["Nome"] = nome;
+	j["PrezzoKg"] = prezzoKg;
+	
+	for (const auto& elem : formula) {
+		componente["ID"] = elem.idComponente;
+		componente["percentuale"] = elem.percentuale;
+
+		if (typeid(*elem.componente) == typeid(Colore)) {
+			colori.push_back(componente);
+		} else
+			additivi.push_back(componente);
+	}
+	j["Formula"] = { {"Colori", colori}, {"Additivi", additivi} };
+	
 	return j;
 }
 

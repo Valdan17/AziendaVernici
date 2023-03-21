@@ -23,15 +23,3 @@ json Componente::toJson() const {
 	j["QuantitaKg"] = quantitaKg;
 	return j;
 }
-
-/* Overload operatori */
-Componente& Componente::operator=(const Componente& c) {
-	nome = c.nome;
-	quantitaKg = c.quantitaKg;
-	return *this;
-}
-
-Componente& Componente::operator+=(const float quantitaKg) {
-	this->quantitaKg += quantitaKg;
-	return *this;
-}

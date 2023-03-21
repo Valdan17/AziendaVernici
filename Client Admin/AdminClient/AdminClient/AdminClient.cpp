@@ -36,15 +36,16 @@ static size_t cb(void* data, size_t size, size_t nmemb, void* clientp)
     return realsize;
 }
 
+/*
 template<typename T>
-void stampa(map<int, T*>& prodotti) {
+void stampa(map<int, T>& prodotti) {
     static_assert(std::is_base_of<ProdottoIndustriale, T>::value, "Il tipo non è correttamente convertibile");
     for (auto& element : prodotti) {
         cout << element.first;
         element.second->stampa();
     }
 }
-
+*/
 
 /* UTILITY */
 void pulisciSchermo() {
@@ -58,7 +59,6 @@ void cleanBuffer() {
 #pragma pop_macro("max")
 }
 
-/*
 void stampa(map<int, Additivo>& additivi) {
     for (auto& element : additivi) {
         cout << element.first;
@@ -79,7 +79,7 @@ void stampa(map<int, Vernice>& vernici) {
         element.second.stampa();
     }
 }
-*/
+
 
 // fa una richiesta di GET all'url passato e ne restituisce il json
 json get(string url) {
@@ -137,18 +137,18 @@ void post(string url, json j) {
 
 
 /* ADDITIVI */
-map<int, Additivo*> deserializzaAdditivi(json j) {
-    map<int, Additivo*> additivi;
+map<int, Additivo> deserializzaAdditivi(json j) {
+    map<int, Additivo> additivi;
 
     for (const auto& additivo : j["additivi"]) {
-        Additivo* a = new Additivo(additivo["nome"], additivo["quantitaKg"]);
+        Additivo a(additivo["nome"], additivo["quantitaKg"]);
         additivi.emplace(additivo["ID"], a);    // serve la funzione emplace() perché altrimenti servirebbe il costr. vuoto
     }
 
     return additivi;
 }
 
-map<int, Additivo*> prelevaAdditivi() {
+map<int, Additivo> prelevaAdditivi() {
     string url = "http://localhost:8000/additivi";
     json jsonAdditivi = get(url);
 
@@ -156,7 +156,7 @@ map<int, Additivo*> prelevaAdditivi() {
 }
 
 void visualizzaAdditivi() {
-    map<int, Additivo*> additivi;
+    map<int, Additivo> additivi;
 
     additivi = prelevaAdditivi();
     if (additivi.size() > 0) {
@@ -216,18 +216,18 @@ void inserisciAdditivo() {
 
 
 /* COLORI */
-map<int, Colore*> deserializzaColori(json j) {
-    map<int, Colore*> colori;
+map<int, Colore> deserializzaColori(json j) {
+    map<int, Colore> colori;
     
     for (const auto& colore : j["colori"]) {
-        Colore* c = new Colore(colore["nome"], colore["quantitaKg"]);
+        Colore c(colore["nome"], colore["quantitaKg"]);
         colori.emplace(colore["ID"], c);    // serve la funzione emplace() perché altrimenti servirebbe il costr. vuoto
     }
 
     return colori;
 }
 
-map<int, Colore*> prelevaColori() {
+map<int, Colore> prelevaColori() {
     string url = "http://localhost:8000/colori";
     json jsonColori = get(url);
 
@@ -235,7 +235,7 @@ map<int, Colore*> prelevaColori() {
 }
 
 void visualizzaColori() {
-    map<int, Colore*> colori;
+    map<int, Colore> colori;
 
     colori = prelevaColori();
     if (colori.size() > 0) {
@@ -300,20 +300,58 @@ TO DO
     Creare un oggetto vernice con la relativa mappa di elementi e lato server
     riuscire a deserializzarla, scrivendo nella tabella Vernici e Composizione
 */
-void prelevaVernici() {
-    
+
+map<int, Vernice*> deserializzaVernici(json j) {
+    map<int, Colore> colori = prelevaColori();
+    map<int, Additivo> additivi = prelevaAdditivi();
+    map<int, Vernice*> vernici;
+
+    for (const auto& vernice : j["vernici"]) {
+        vector<elementoFormula> formula;
+
+        for (const auto& colore : j["colori"]) {
+            elementoFormula elem;
+            elem.idComponente = colore["IDColore"];
+            elem.percentuale = colore["Percentuale"];
+
+            //elem.componente = colori.find(elem.idComponente)->second;
+            formula.push_back(elem);
+        }
+
+        for (const auto& additivo : j["additivi"]) {
+            elementoFormula elem;
+            elem.idComponente = additivo["IDAdditivo"];
+            elem.percentuale = additivo["Percentuale"];
+            //elem.componente = additivi.find(elem.idComponente)->second;
+            formula.push_back(elem);
+        }
+            Vernice* v = new Vernice(vernice["nome"], vernice["quantitaKg"], vernice["prezzoKg"], formula);
+            vernici.emplace(vernice["ID"], v); 
+    }
+    return vernici;
 }
 
 
+map<int, Vernice*> prelevaVernici() {
+    string url = "http://localhost:8000/vernici";
+    json jsonVernici = get(url);
+
+    return deserializzaVernici(jsonVernici);
+}
+
+void visualizzaVernici() {
+    map<int, Vernice*> vernici;
+    vernici = prelevaVernici();
+}
+
 void inserisciVernice() {
-    string nomeVernice, inserimentoQuantitaKg, inserimento, inserimentoPercentuale;
-    float quantitaKg, percentualeTotaleComponenti = 0.0f;;
+    string nomeVernice, inserimentoPrezzoKg, inserimento, inserimentoPercentuale;
+    float prezzoKg, percentualeTotaleComponenti = 0.0f;
     elementoFormula elemento;
     vector<elementoFormula> formula;
-    map<int, Colore*> colori;
-    map<int, Additivo*> additivi;
+    map<int, Colore> colori = prelevaColori();
+    map<int, Additivo> additivi = prelevaAdditivi();
     int idComponente;
-    Vernice* v;
 
     pulisciSchermo();
 
@@ -326,11 +364,18 @@ void inserisciVernice() {
         cout << "Il campo nome non deve essere vuoto" << endl;
         return;
     }
-    //cout << "Elaborazione della formula:" << endl;
+    cout << " - Prezzo di vendita al Kg: ";
+
+    try {
+        cin >> inserimentoPrezzoKg;
+        prezzoKg = stof(inserimentoPrezzoKg);
+    } catch (const exception& e) {
+        cout << "Errore: quantita' non valida" << endl;
+    }
+
+    pulisciSchermo();
+
     do {
-        if (percentualeTotaleComponenti == 100)
-            break;
-        pulisciSchermo();
         cout << "\nFORMULA ATTUALE: " << percentualeTotaleComponenti << "%" << endl;
         if (formula.size() > 0) {
             for (elementoFormula elementoFormula: formula) {
@@ -341,72 +386,91 @@ void inserisciVernice() {
             "2. Aggiungi un additivo\n";
         cin >> inserimento;
         if (inserimento == "1") {
-            colori = prelevaColori();
             visualizzaColori();
             cout << "\nInserisci l'ID del colore da aggiungere: ";
             cin >> idComponente;
+            pulisciSchermo();
             if (colori.contains(idComponente)) {
-                colori.find(idComponente)->second->stampa();
+                colori.find(idComponente)->second.stampa();
+
+                for (int i = 0; i < formula.size(); i++) {
+                    if (static_cast<Colore>(*formula[i].componente) == colori.find(idComponente)->second) {
+                        percentualeTotaleComponenti -= formula[i].percentuale;
+                        formula.erase(formula.begin() + i);
+                        break;
+                    }
+                }
+
                 cout << "\nInserisci la % del colore nella formula (0-100%): ";
                 cin >> inserimentoPercentuale;
+                pulisciSchermo();
                 try {
                     elemento.percentuale = stof(inserimentoPercentuale);
+                    if (elemento.percentuale <= 0.0) throw exception();
                 }
-                catch (const invalid_argument& e) {
-                    pulisciSchermo();
+                catch (const exception& e) {
                     cout << "Errore: quantita' non valida" << endl;
-                    return;
+                    continue;
                 }
-                elemento.percentuale = stof(inserimentoPercentuale);
-                elemento.componente = colori.find(idComponente)->second;
+                elemento.idComponente = idComponente;
+                elemento.componente = &colori.find(idComponente)->second;
+                if (elemento.percentuale + percentualeTotaleComponenti > 100) {
+                    cout << "\nATTENZIONE: la percentuale inserita supera il totale, impostata al massimo consentito" << endl;
+                    elemento.percentuale = 100.0f - percentualeTotaleComponenti;
+                }
+
+                percentualeTotaleComponenti += stof(inserimentoPercentuale);
+                formula.push_back(elemento);
+            }
+            else {
+                cout << "Il colore selezionato non esiste" << endl;
+            }
+
+        } else if(inserimento == "2") {
+            visualizzaAdditivi();
+            cout << "\nInserisci l'ID dell'additivo da aggiungere: ";
+            cin >> idComponente;
+            pulisciSchermo();
+            if (additivi.contains(idComponente)) {
+                additivi.find(idComponente)->second.stampa();
+
+                for (int i = 0; i < formula.size(); i++) {
+                    if (static_cast<Additivo>(*formula[i].componente) == additivi.find(idComponente)->second) {
+                        percentualeTotaleComponenti -= formula[i].percentuale;
+                        formula.erase(formula.begin() + i);
+                        break;
+                    }
+                }
+
+                cout << "\nInserisci la % dell'additivo nella formula (0-100%): ";
+                cin >> inserimentoPercentuale;
+                pulisciSchermo();
+                try { 
+                    elemento.percentuale = stof(inserimentoPercentuale);
+                    if (elemento.percentuale <= 0.0) throw exception();
+                }
+                catch (const exception& e) {
+                    cout << "Errore: quantita' non valida" << endl;
+                    continue;
+                }
+                elemento.idComponente = idComponente;
+                elemento.componente = &additivi.find(idComponente)->second;
                 if (elemento.percentuale + percentualeTotaleComponenti > 100) {
                     cout << "\nATTENZIONE: la percentuale inserita supera il totale consentito, impostata al massimo di default" << endl;
                     elemento.percentuale = 100.0f - percentualeTotaleComponenti;
                 }
+                
                 percentualeTotaleComponenti += stof(inserimentoPercentuale);
                 formula.push_back(elemento);
             }
             else
                 cout << "L'additivo selezionato non esiste" << endl;
-
-        } else if(inserimento == "2") {
-            additivi = prelevaAdditivi();
-            visualizzaAdditivi();
-            cout << "\nInserisci l'ID dell'additivo da aggiungere: ";
-            cin >> idComponente;
-            if (additivi.contains(idComponente)) {
-                additivi.find(idComponente)->second->stampa();
-                cout << "\nInserisci la % dell'additivo nella formula (0-100%): ";
-                cin >> inserimentoPercentuale;
-                try {
-                    elemento.percentuale = stof(inserimentoPercentuale);
-                }
-                catch (const invalid_argument& e) {
-                    pulisciSchermo();
-                    cout << "Errore: quantita' non valida" << endl;
-                    return;
-                }
-                elemento.componente = additivi.find(idComponente)->second;
-                if (elemento.percentuale + percentualeTotaleComponenti > 100) {
-                    cout << "\nATTENZIONE: la percentuale inserita supera il totale consentito, impostata al massimo di default" << endl;
-                    elemento.percentuale = 100.0f - percentualeTotaleComponenti;
-                }
-                percentualeTotaleComponenti += stof(inserimentoPercentuale);
-                formula.push_back(elemento);
-            }
-            else
-                cout << "Il colore selezionato non esiste" << endl;
         }
         else {
+            pulisciSchermo();
             cout << "Scelta non valida\n";
         }
-        if(percentualeTotaleComponenti < 100) {
-            cout << "\nInserisci 1 per inserire un nuovo componente, altrimenti per terminare la formula" << endl;
-            cin >> inserimento;
-        }
-        else
-            break;
-    } while (inserimento == "1");
+    } while (percentualeTotaleComponenti < 100);
 
     cout << "\nFormula completa al 100%:" << endl;
     for (elementoFormula elementoFormula : formula) {
@@ -415,8 +479,11 @@ void inserisciVernice() {
     cout << "\nInserisci 1 per confermare la creazione della vernice, altrimenti per uscire" << endl;
     cin >> inserimento;
     if (inserimento == "1") {
-        v = new Vernice(nomeVernice, quantitaKg, formula);
+        Vernice v(nomeVernice, prezzoKg, formula);
+        cout << v.toJson();
+        post("http://127.0.0.1:8000/vernici", v.toJson());
     }
+    pulisciSchermo();
 }
 
 int main() {
@@ -455,7 +522,7 @@ int main() {
             break;
 
         case 3: // Visualizza vernici
-            prelevaVernici();
+            visualizzaVernici();
             break;
 
         case 4: // Inserisci nuovo Colore

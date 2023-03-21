@@ -6,6 +6,7 @@
 #include "Colore.h"
 
 struct elementoFormula {
+	int idComponente;
 	short percentuale;
 	Componente* componente;
 };
