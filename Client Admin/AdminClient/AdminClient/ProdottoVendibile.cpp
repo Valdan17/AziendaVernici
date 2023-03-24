@@ -17,8 +17,3 @@ float ProdottoVendibile::getPrezzoKg() const {
 void ProdottoVendibile::setPrezzoKg(float prezzoKg) {
 	this->prezzoKg = prezzoKg;
 }
-
-void ProdottoVendibile::whoAmI() const {
-	cout << ", un prodotto vendibile";
-	ProdottoIndustriale::whoAmI();
-}

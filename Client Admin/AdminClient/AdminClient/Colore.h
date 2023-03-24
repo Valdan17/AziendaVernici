@@ -12,7 +12,7 @@ public:
 
 	/* Altri metodi */
 	void stampa() const override;	// implementazione del metodo astratto
-	void whoAmI() const;
+	string whoAmI() const;
 
 	/* Overload operatori */
 	Colore& operator=(const Colore& c);

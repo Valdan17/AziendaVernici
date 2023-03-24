@@ -12,11 +12,6 @@ Componente::Componente(string nome, float quantitaKg) : ProdottoIndustriale(nome
 
 
 /* Altre funzioni */
-void Componente::whoAmI() const{
-	cout << ", un componente";
-	ProdottoIndustriale::whoAmI();
-}
-
 json Componente::toJson() const {
 	json j;
 	j["Nome"] = nome;

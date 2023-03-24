@@ -24,10 +24,12 @@ public:
 	vector<elementoFormula> getFormula() const;
 	void setFormula(vector<elementoFormula> formula);
 	void stampaFormula() const;
+	void stampaFormulaConQuantitaKg() const;
 
 	/* Altri metodi */
 	virtual void stampa() const override;
 	virtual json toJson() const;
-	void whoAmI() const;
+	bool isProducibileInQuantitaKg(float quantitaDaProdure) const;
+	string whoAmI() const;
 };
 

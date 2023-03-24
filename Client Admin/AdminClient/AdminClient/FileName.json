@@ -1,0 +1,20 @@
+{
+  "Componenti": [
+    {
+      "ID": 4,
+      "QuantitaKg": 17.0
+    },
+    {
+      "ID": 2,
+      "QuantitaKg": 9.5
+    },
+    {
+      "ID": 6,
+      "QuantitaKg": 19.0
+    }
+  ],
+  "Vernice": {
+    "ID": "10",
+    "QuantitaKg": 1.0
+  }
+}

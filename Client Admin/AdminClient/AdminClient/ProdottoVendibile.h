@@ -18,6 +18,6 @@ public:
 	/* Altri metodi */
 	virtual void stampa() const = 0;
 	virtual json toJson() const = 0;
-	void whoAmI() const;
+	virtual string whoAmI() const = 0;
 };
 

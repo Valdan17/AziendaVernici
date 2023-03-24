@@ -34,7 +34,3 @@ float ProdottoIndustriale::getQuantitaKg() const {
 void ProdottoIndustriale::setQuantitaKg(float quantitaKg) {
 	this->quantitaKg = quantitaKg;
 }
-
-void ProdottoIndustriale::whoAmI() const {
-	cout << " e un prodotto";
-}

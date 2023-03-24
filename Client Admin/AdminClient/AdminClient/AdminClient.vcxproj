@@ -135,6 +135,7 @@
     <ClCompile Include="AdminClient.cpp" />
     <ClCompile Include="Colore.cpp" />
     <ClCompile Include="Componente.cpp" />
+    <ClCompile Include="Giacenze.cpp" />
     <ClCompile Include="ProdottoIndustriale.cpp" />
     <ClCompile Include="ProdottoVendibile.cpp" />
     <ClCompile Include="Vernice.cpp" />
@@ -143,11 +144,13 @@
     <ClInclude Include="Additivo.h" />
     <ClInclude Include="Colore.h" />
     <ClInclude Include="Componente.h" />
+    <ClInclude Include="Giacenze.h" />
     <ClInclude Include="ProdottoIndustriale.h" />
     <ClInclude Include="ProdottoVendibile.h" />
     <ClInclude Include="Vernice.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="FileName.json" />
     <None Include="vcpkg.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

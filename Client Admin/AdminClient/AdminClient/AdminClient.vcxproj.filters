@@ -36,6 +36,9 @@
     <ClCompile Include="ProdottoVendibile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Giacenze.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Colore.h">
@@ -56,8 +59,12 @@
     <ClInclude Include="ProdottoVendibile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Giacenze.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="vcpkg.json" />
+    <None Include="FileName.json" />
   </ItemGroup>
 </Project>

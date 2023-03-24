@@ -19,15 +19,22 @@ void Vernice::setFormula(vector<elementoFormula> formula) {
 }
 
 void Vernice::stampaFormula() const {
-	cout << "Formula vernice: " << nome << endl;
-	for (elementoFormula elemento : formula) {
-		cout << " - " << elemento.percentuale << "% " << elemento.componente->getNome() << "\n" << endl;
+	cout << "Composizione vernice " << nome << ":" << endl;
+	for (elementoFormula elementoFormula : formula) {
+		cout << " - " << elementoFormula.percentuale << "% " << elementoFormula.componente->getNome() << endl;
+	}
+}
+
+void Vernice::stampaFormulaConQuantitaKg() const {
+	cout << "Composizione vernice " << nome << ":" << endl;
+	for (elementoFormula elementoFormula : formula) {
+		cout << " - " << elementoFormula.percentuale << "% " << elementoFormula.componente->getNome() << " (" << elementoFormula.componente->getQuantitaKg() << " Kg disponibili)" << endl;
 	}
 }
 
 /* Altri metodi */
 void Vernice::stampa() const {
-	cout << "VERNICE: " << nome << ", quantita' disponibile: " << quantitaKg << "Kg" << endl;
+	cout << " - Vernice: " << nome << ", " << quantitaKg << "Kg" << ", " << prezzoKg << "Euro/Kg" << endl;
 }
 
 json Vernice::toJson() const {
@@ -51,7 +58,32 @@ json Vernice::toJson() const {
 	return j;
 }
 
-void Vernice::whoAmI() const {
-	cout << "Sono una vernice";
-	ProdottoVendibile::whoAmI();
+string Vernice::whoAmI() const {
+	return "Vernice";
+}
+
+bool Vernice::isProducibileInQuantitaKg(float quantitaDaProdurre) const {
+	bool isVerniceProducibile = true;
+
+	for (elementoFormula elementoFormula : formula) {
+		float kgNecessari = (elementoFormula.percentuale/100.0f) * quantitaDaProdurre;
+		float kgDisponibili = elementoFormula.componente->getQuantitaKg();
+		Componente* componente = elementoFormula.componente;
+
+		if (kgNecessari > kgDisponibili) {
+			cout << " - Mancano " << kgNecessari - kgDisponibili << "Kg di " << componente->getNome() << endl;
+			isVerniceProducibile = false;
+		}
+	}
+
+	if (isVerniceProducibile) {
+		for (elementoFormula elementoFormula : formula) {
+			float kgNecessari = (elementoFormula.percentuale / 100.0f) * quantitaDaProdurre;
+			float kgDisponibili = elementoFormula.componente->getQuantitaKg();
+			Componente* componente = elementoFormula.componente;
+			cout << " - Occorrono " << kgNecessari << "Kg di " << componente->whoAmI() << " " << componente->getNome() << " (su " << kgDisponibili << "Kg disponibili)" << endl;
+		}
+	}
+
+	return isVerniceProducibile;
 }

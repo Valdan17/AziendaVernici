@@ -14,9 +14,8 @@ void Additivo::stampa() const {
 	cout << " - Additivo: " << getNome() << ", " << getQuantitaKg() << "Kg" << endl;
 }
 
-void Additivo::whoAmI() const {
-	cout << "Sono un additivo";
-	Componente::whoAmI();
+string Additivo::whoAmI() const {
+	return "Additivo";
 }
 
 /* Overload operatori */

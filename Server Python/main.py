@@ -216,8 +216,8 @@ def get_vernici():
     for vernice in vernici:
         colori = []
         # Query di selezione di tutte i colori che compongono la vernice
-        query = "SELECT composizione_colori.Colore, composizione_colori.Percentuale FROM Vernici INNER JOIN composizione_colori ON vernici.id = composizione_colori.vernice"
-        cursor.execute(query)
+        query = "SELECT composizione_colori.Colore, composizione_colori.Percentuale FROM Vernici INNER JOIN composizione_colori ON vernici.id = composizione_colori.vernice WHERE vernici.id = %s"
+        cursor.execute(query, (vernice["ID"],))
         results = cursor.fetchall()
         for result in results:
             idColore = result[0]
@@ -229,8 +229,8 @@ def get_vernici():
     for vernice in vernici:
         additivi = []
         # Query di selezione di tutte i colori che compongono la vernice
-        query = "SELECT composizione_additivi.Additivo, composizione_additivi.Percentuale FROM Vernici INNER JOIN composizione_additivi ON vernici.id = composizione_additivi.vernice"
-        cursor.execute(query)
+        query = "SELECT composizione_additivi.Additivo, composizione_additivi.Percentuale FROM Vernici INNER JOIN composizione_additivi ON vernici.id = composizione_additivi.vernice WHERE vernici.id = %s"
+        cursor.execute(query, (vernice["ID"],))
         results = cursor.fetchall()
         for result in results:
             idAdditivo = result[0]
@@ -246,3 +246,35 @@ def get_vernici():
     # Restituzione della lista di colori come JSON
     return {"vernici": vernici}
 
+# Endpoint per la richiesta PUT
+@app.put("/vernici")
+async def update_item(request: Request):
+    body = await request.json()
+    print(body)
+
+    # Connessione al database
+    conn = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        database="aziendavernici"
+    )
+
+    # Aggiornamento delle quantitaKg dei componenti
+    for componente in body["Componenti"]:
+        print("ID = ", componente["ID"], ", Nuova q.ta Kg = ", componente["QuantitaKg"])
+        query = "U"
+        #values = (idVernice, idColore, percentuale)
+        #cursor.execute(query, values)
+        #conn.commit()
+
+    vernice = body["Vernice"]
+    print("ID Vernice = ", vernice["ID"], ", nuova q.ta Kg = ", vernice["QuantitaKg"])
+
+    # cursor = conn.cursor()
+    #sql = "UPDATE items SET QuantitaKg = QuantitaKg - %s WHERE id = %s"
+    #val = (item_update.quantity, item_id)
+    #cursor.execute(sql, val)
+
+    #if cursor.rowcount == 0:
+        #raise HTTPException(status_code=404, detail="Item not found")
+    return {"ok"}

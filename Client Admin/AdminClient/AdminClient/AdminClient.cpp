@@ -10,6 +10,7 @@
 #include "Colore.h"
 #include "Additivo.h"
 #include "Vernice.h"
+#include "Giacenze.h"
 
 using json = nlohmann::json;
 using namespace std;
@@ -37,6 +38,14 @@ static size_t cb(void* data, size_t size, size_t nmemb, void* clientp)
 }
 
 /*
+size_t write_callback(char* ptr, size_t size, size_t nmemb, void* userdata)
+{
+    ((std::string*)userdata)->append(ptr, size * nmemb);
+    return size * nmemb;
+}
+*/
+
+/*
 template<typename T>
 void stampa(map<int, T>& prodotti) {
     static_assert(std::is_base_of<ProdottoIndustriale, T>::value, "Il tipo non è correttamente convertibile");
@@ -61,27 +70,27 @@ void cleanBuffer() {
 
 void stampa(map<int, Additivo>& additivi) {
     for (auto& element : additivi) {
-        cout << element.first;
+        cout << " " << element.first;
         element.second.stampa();
     }
 }
 
 void stampa(map<int, Colore>& colori) {
     for (auto& element : colori) {
-        cout << element.first;
+        cout << " " <<element.first;
         element.second.stampa();
     }
 }
 
 void stampa(map<int, Vernice>& vernici) {
     for (auto& element : vernici) {
-        cout << element.first;
+        cout << " " << element.first;
         element.second.stampa();
     }
 }
 
 
-// fa una richiesta di GET all'url passato e ne restituisce il json
+// effettua una richiesta di GET all'url specificato e ne restituisce il json
 json get(string url) {
     CURL* curl;
     CURLcode res;
@@ -100,7 +109,7 @@ json get(string url) {
     }
 }   
 
-// fa una richiesta di POST all'url passato del json passato 
+// effettua una richiesta di POST all'url specificato del json passato 
 void post(string url, json j) {
     string body;
 
@@ -133,6 +142,85 @@ void post(string url, json j) {
     curl_slist_free_all(headers);
 }
 
+// effettua una richiesta PUT all'url specificato del json passato
+void put(string url, json j)
+{
+    // Inizializza l'handle di curl
+    CURL* curl = curl_easy_init();
+    if (!curl) {
+        std::cerr << "Errore: impossibile inizializzare l'handle di curl" << std::endl;
+        return;
+    }
+
+    // Imposta l'URL della richiesta
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+
+    // Imposta il tipo di richiesta a PUT
+    curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
+
+    // Converte i dati in formato JSON in una stringa
+    string data_str = j.dump();
+
+    // Imposta i dati della richiesta
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data_str.c_str());
+
+    // Esegue la richiesta
+    CURLcode res = curl_easy_perform(curl);
+    if (res != CURLE_OK) {
+        cerr << "Errore: impossibile eseguire la richiesta: " << curl_easy_strerror(res) << std::endl;
+    }
+
+    // Rilascia l'handle di curl
+    curl_easy_cleanup(curl);
+}
+
+
+/*
+void put(string url, json data) {
+    CURL* curl;
+    CURLcode res;
+    std::string readBuffer;
+
+    // Convert JSON data to string
+    std::string dataStr = data.dump();
+
+    // Initialize curl
+    curl = curl_easy_init();
+    if (curl)
+    {
+        // Set the URL of the endpoint to send the PUT request to
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+
+        // Set the HTTP method to PUT
+        curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
+
+        // Set the data to send in the request
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, dataStr.c_str());
+
+        // Set the callback function to receive the response data
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, cb);
+
+        // Set the buffer to receive the response data
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+
+        // Perform the request
+        res = curl_easy_perform(curl);
+
+        // Check for errors
+        if (res != CURLE_OK)
+        {
+            std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
+        }
+
+        // Clean up curl
+        curl_easy_cleanup(curl);
+
+        // Print the response data
+        std::cout << "Response data: " << readBuffer << std::endl;
+    }
+}
+*/
+
 /* COMPONENTI */
 
 
@@ -156,7 +244,7 @@ map<int, Additivo> prelevaAdditivi() {
 }
 
 void visualizzaAdditivi() {
-    map<int, Additivo> additivi;
+    map<int, Additivo>& additivi = Giacenze::additivi;
 
     additivi = prelevaAdditivi();
     if (additivi.size() > 0) {
@@ -235,7 +323,7 @@ map<int, Colore> prelevaColori() {
 }
 
 void visualizzaColori() {
-    map<int, Colore> colori;
+    map<int, Colore>& colori = Giacenze::colori;
 
     colori = prelevaColori();
     if (colori.size() > 0) {
@@ -294,45 +382,72 @@ void inserisciColore() {
 
 
 /* VERNICI */
-
 /*
-TO DO 
-    Creare un oggetto vernice con la relativa mappa di elementi e lato server
-    riuscire a deserializzarla, scrivendo nella tabella Vernici e Composizione
+Vernice deserializzaVernice(json vernice) {
+    map<int, Colore>& colori = Giacenze::colori = prelevaColori();
+    map<int, Additivo>& additivi = Giacenze::additivi = prelevaAdditivi();
+    vector<elementoFormula> formula;
+
+        for (const auto& colore : vernice["colori"]) {
+            elementoFormula elem;
+            elem.idComponente = colore["IDColore"];
+            elem.percentuale = colore["Percentuale"];
+            elem.componente = &colori.find(elem.idComponente)->second;
+            formula.push_back(elem);
+        }
+
+        for (const auto& additivo : vernice["additivi"]) {
+            elementoFormula elem;
+            elem.idComponente = additivo["IDAdditivo"];
+            elem.percentuale = additivo["Percentuale"];
+            elem.componente = &additivi.find(elem.idComponente)->second;
+            formula.push_back(elem);
+        }
+        Vernice v(vernice["nome"], vernice["quantitaKg"], vernice["PrezzoKg"], formula);
+        return v;
+}
+
+map<int, Vernice> deserializzaVernici(json j) {
+    map<int, Vernice> vernici;
+
+    for (const auto& vernice : j["vernici"]) {
+        vernici.emplace(vernice["ID"], deserializzaVernice(vernice));
+    }
+   
+    return vernici;
+}
 */
 
-map<int, Vernice*> deserializzaVernici(json j) {
-    map<int, Colore> colori = prelevaColori();
-    map<int, Additivo> additivi = prelevaAdditivi();
-    map<int, Vernice*> vernici;
+map<int, Vernice> deserializzaVernici(json j) {
+    map<int, Colore>& colori = Giacenze::colori = prelevaColori();
+    map<int, Additivo>& additivi = Giacenze::additivi = prelevaAdditivi();
+    map<int, Vernice> vernici;
 
     for (const auto& vernice : j["vernici"]) {
         vector<elementoFormula> formula;
 
-        for (const auto& colore : j["colori"]) {
+        for (const auto& colore : vernice["colori"]) {
             elementoFormula elem;
             elem.idComponente = colore["IDColore"];
             elem.percentuale = colore["Percentuale"];
-
-            //elem.componente = colori.find(elem.idComponente)->second;
+            elem.componente = &colori.find(elem.idComponente)->second;
             formula.push_back(elem);
         }
 
-        for (const auto& additivo : j["additivi"]) {
+        for (const auto& additivo : vernice["additivi"]) {
             elementoFormula elem;
             elem.idComponente = additivo["IDAdditivo"];
             elem.percentuale = additivo["Percentuale"];
-            //elem.componente = additivi.find(elem.idComponente)->second;
+            elem.componente = &additivi.find(elem.idComponente)->second;
             formula.push_back(elem);
         }
-            Vernice* v = new Vernice(vernice["nome"], vernice["quantitaKg"], vernice["prezzoKg"], formula);
-            vernici.emplace(vernice["ID"], v); 
+            Vernice v(vernice["nome"], vernice["quantitaKg"], vernice["PrezzoKg"], formula);
+            vernici.emplace(vernice["ID"], v);
     }
     return vernici;
 }
 
-
-map<int, Vernice*> prelevaVernici() {
+map<int, Vernice> prelevaVernici() {
     string url = "http://localhost:8000/vernici";
     json jsonVernici = get(url);
 
@@ -340,8 +455,14 @@ map<int, Vernice*> prelevaVernici() {
 }
 
 void visualizzaVernici() {
-    map<int, Vernice*> vernici;
-    vernici = prelevaVernici();
+    map<int, Vernice>& vernici = Giacenze::vernici = prelevaVernici();
+
+    if (vernici.size() > 0) {
+        cout << "\nVernici in magazzino: " << endl;
+        stampa(vernici);
+    }
+    else
+        cout << "Non sono presenti vernici nel magazzino\n";
 }
 
 void inserisciVernice() {
@@ -349,8 +470,8 @@ void inserisciVernice() {
     float prezzoKg, percentualeTotaleComponenti = 0.0f;
     elementoFormula elemento;
     vector<elementoFormula> formula;
-    map<int, Colore> colori = prelevaColori();
-    map<int, Additivo> additivi = prelevaAdditivi();
+    map<int, Colore>& colori = Giacenze::colori = prelevaColori();
+    map<int, Additivo>& additivi = Giacenze::additivi = prelevaAdditivi();
     int idComponente;
 
     pulisciSchermo();
@@ -486,6 +607,75 @@ void inserisciVernice() {
     pulisciSchermo();
 }
 
+void visualizzaComposizioneVernice() {
+    map<int, Vernice>& vernici = Giacenze::vernici = prelevaVernici();
+    int idVernice;
+    json jsonVernice;
+
+    cout << "\nVernici in magazzino: " << endl;
+    stampa(vernici);
+    cout << "\nInserisci l'ID della vernice di cui visualizzare la composizione: ";
+    cin >> idVernice;
+
+    pulisciSchermo();
+
+    if (vernici.contains(idVernice)) {
+        vernici.find(idVernice)->second.stampaFormula();
+    } else {
+        cout << "\nVernice non valida" << endl;
+    }
+}
+
+void aggiornaQuantitaVernice() {
+    string idVernice, quantitaKgDaProdurre, confermaProduzione;
+    map<int, Vernice>& vernici = Giacenze::vernici = prelevaVernici();
+    json j, componente, componenti;
+
+    cout << "\nVernici in magazzino: " << endl;
+    stampa(vernici);
+    cout << "\nInserisci l'ID della vernice da produrre: ";
+    cin >> idVernice;
+
+    pulisciSchermo();
+
+    if (vernici.contains(stoi(idVernice))) {
+        Vernice& verniceDaProdurre = vernici.find(stoi(idVernice))->second;
+        verniceDaProdurre.stampaFormulaConQuantitaKg();
+        
+        cout << "\nInserisci la quantita in Kg da produrre: ";
+        cin >> quantitaKgDaProdurre;
+
+        pulisciSchermo();
+       
+        cout << "\nPer la produzione di " << quantitaKgDaProdurre << "Kg di vernice " << verniceDaProdurre.getNome() << ":" << endl;
+
+        if (verniceDaProdurre.isProducibileInQuantitaKg(stof(quantitaKgDaProdurre))) {
+            cout << "\nInserire 1 per confermare, altrimenti per annullare ed uscire: ";
+            cin >> confermaProduzione;
+
+            pulisciSchermo();
+
+            if (confermaProduzione == "1") {
+                for (elementoFormula elementoFormula : verniceDaProdurre.getFormula()) {
+                    componente["ID"] = elementoFormula.idComponente;
+                    componente["QuantitaKg"] = elementoFormula.componente->getQuantitaKg() - stoi(quantitaKgDaProdurre);
+                    componenti.push_back(componente);
+                }
+                j["Vernice"]["ID"] = idVernice;
+                j["Vernice"]["QuantitaKg"] = verniceDaProdurre.getQuantitaKg() + stoi(quantitaKgDaProdurre);
+                j["Componenti"] = componenti;
+                put("http://127.0.0.1:8000/vernici", j);
+            }
+            else
+                cout << "\nProduzione annullata" << endl;
+        }
+    }
+    else {
+        cout << "\nVernice non valida" << endl;
+    }
+    
+}
+
 int main() {
     string input;
     int scelta;
@@ -495,9 +685,11 @@ int main() {
             "1. Visualizza colori in magazzino\n"
             "2. Visualizza additivi in magazzino\n"
             "3. Visualizza vernici in magazzino\n"
-            "4. Inserisci nuovo colore in magazzino\n"
-            "5. Inserisci nuovo additivo in magazzino\n"
-            "6. Inserisci nuova vernice in magazzino\n"
+            "4. Visualizza composizione vernice\n"
+            "5. Inserisci nuovo colore in magazzino\n"
+            "6. Inserisci nuovo additivo in magazzino\n"
+            "7. Inserisci nuova vernice in magazzino\n"
+            "8. Produzione di vernice\n"
             "Altro. Esci" << endl;
 
         cin >> input;
@@ -525,20 +717,29 @@ int main() {
             visualizzaVernici();
             break;
 
-        case 4: // Inserisci nuovo Colore
+        case 4:
+            visualizzaComposizioneVernice();
+            break;
+
+        case 5: // Inserisci nuovo Colore
             inserisciColore();
             break;
 
-        case 5: // Inserisci nuovo additivo
+        case 6: // Inserisci nuovo additivo
             inserisciAdditivo();
             break;
 
-        case 6: // Inserisci nuova vernice
+        case 7: // Inserisci nuova vernice
             inserisciVernice();
             break;
+
+        case 8: // Aggiorna quantità vernice
+            aggiornaQuantitaVernice();
+            break;
+
         default:
             cout << "Esco...\n" << endl;
             break;
         }
-    } while (scelta < 7);
+    } while (scelta < 9);
 }

@@ -17,9 +17,8 @@ void Colore::stampa() const {
 	cout << " - Colore: " << getNome() << ", " << getQuantitaKg() << "Kg" << endl;
 }
 
-void Colore::whoAmI() const {
-	Componente::whoAmI();
-	cout << "Sono un colore";
+string Colore::whoAmI() const {
+	return "Colore";
 }
 
 /* Overload operatori */
