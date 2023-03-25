@@ -19,7 +19,7 @@ void Vernice::setFormula(vector<elementoFormula> formula) {
 }
 
 void Vernice::stampaFormula() const {
-	cout << "Composizione vernice " << nome << ":" << endl;
+	cout << "\nComposizione vernice " << nome << ":" << endl;
 	for (elementoFormula elementoFormula : formula) {
 		cout << " - " << elementoFormula.percentuale << "% " << elementoFormula.componente->getNome() << endl;
 	}
@@ -43,10 +43,12 @@ json Vernice::toJson() const {
 
 	j["Nome"] = nome;
 	j["PrezzoKg"] = prezzoKg;
+	j["QuantitaKg"] = quantitaKg;
 	
 	for (const auto& elem : formula) {
+		componente = elem.componente->toJson();
 		componente["ID"] = elem.idComponente;
-		componente["percentuale"] = elem.percentuale;
+		componente["Percentuale"] = elem.percentuale;
 
 		if (typeid(*elem.componente) == typeid(Colore)) {
 			colori.push_back(componente);

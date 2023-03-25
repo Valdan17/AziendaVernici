@@ -5,11 +5,9 @@
 using namespace std;
 
 /* Costruttori */
-
 Componente::Componente(string nome) : ProdottoIndustriale(nome) {}
 
 Componente::Componente(string nome, float quantitaKg) : ProdottoIndustriale(nome, quantitaKg) {}
-
 
 /* Altre funzioni */
 json Componente::toJson() const {

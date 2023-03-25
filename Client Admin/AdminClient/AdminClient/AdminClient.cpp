@@ -175,55 +175,6 @@ void put(string url, json j)
 }
 
 
-/*
-void put(string url, json data) {
-    CURL* curl;
-    CURLcode res;
-    std::string readBuffer;
-
-    // Convert JSON data to string
-    std::string dataStr = data.dump();
-
-    // Initialize curl
-    curl = curl_easy_init();
-    if (curl)
-    {
-        // Set the URL of the endpoint to send the PUT request to
-        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-
-        // Set the HTTP method to PUT
-        curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
-
-        // Set the data to send in the request
-        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, dataStr.c_str());
-
-        // Set the callback function to receive the response data
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, cb);
-
-        // Set the buffer to receive the response data
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
-
-        // Perform the request
-        res = curl_easy_perform(curl);
-
-        // Check for errors
-        if (res != CURLE_OK)
-        {
-            std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
-        }
-
-        // Clean up curl
-        curl_easy_cleanup(curl);
-
-        // Print the response data
-        std::cout << "Response data: " << readBuffer << std::endl;
-    }
-}
-*/
-
-/* COMPONENTI */
-
-
 /* ADDITIVI */
 map<int, Additivo> deserializzaAdditivi(json j) {
     map<int, Additivo> additivi;
@@ -300,6 +251,47 @@ void inserisciAdditivo() {
     }
     else
         cout << "Inserimento annullato\n";
+}
+
+void aggiornaQuantitaAdditivo() {
+    map<int, Additivo>& additivi = Giacenze::additivi = prelevaAdditivi();
+    string idAdditivo, inserimentoQuantita;
+    float quantitaDaAggiungere;
+    json j;
+
+    pulisciSchermo();
+    cout << "\nAdditivi in magazzino: " << endl;
+    stampa(additivi);
+    cout << "\nInserisci l'ID dell'additivo di cui aggiornare la quantita': ";
+    cin >> idAdditivo;
+
+    pulisciSchermo();
+
+    if (additivi.contains(stoi(idAdditivo))) {
+        Additivo additivoDaAggiornare = additivi.find(stoi(idAdditivo))->second;
+        cout << "\nInserisci la quantita di " << additivoDaAggiornare.getNome() << " in kg da aggiungere: ";
+        cin >> inserimentoQuantita;
+
+        try {
+            quantitaDaAggiungere = stof(inserimentoQuantita);
+            if (quantitaDaAggiungere <= 0) throw exception();
+        }
+        catch (const exception& e) {
+            pulisciSchermo();
+            cout << "Errore: quantita' non valida" << endl;
+            return;
+        }
+
+        pulisciSchermo();
+        // OVERLOAD OPERATORE += 
+        additivoDaAggiornare += quantitaDaAggiungere;
+        j = additivoDaAggiornare.toJson();
+        j["ID"] = idAdditivo;
+        put("http://127.0.0.1:8000/additivi", j);
+    }
+    else {
+        cout << "Il colore selezionato non esiste nel magazzino\n";
+    }
 }
 
 
@@ -380,44 +372,49 @@ void inserisciColore() {
         cout << "Inserimento annullato\n";
 }
 
+void aggiornaQuantitaColore() {
+    map<int, Colore>& colori = Giacenze::colori = prelevaColori();
+    string idColore, inserimentoQuantita;
+    float quantitaDaAggiungere;
+    json j;
+
+    pulisciSchermo();
+    cout << "\nColori in magazzino: " << endl;
+    stampa(colori);
+    cout << "\nInserisci l'ID del colore di cui aggiornare la quantita': ";
+    cin >> idColore;
+
+    pulisciSchermo();
+
+    try {
+        if (colori.contains(stoi(idColore))) {
+            Colore coloreDaAggiornare = colori.find(stoi(idColore))->second;
+            cout << "\nInserisci la quantita di " << coloreDaAggiornare.getNome() << " in kg da aggiungere: ";
+            cin >> inserimentoQuantita;
+
+            quantitaDaAggiungere = stof(inserimentoQuantita);
+            if (quantitaDaAggiungere <= 0) throw exception();
+
+            pulisciSchermo();
+            // OVERLOAD OPERATORE += 
+            coloreDaAggiornare += quantitaDaAggiungere;
+            j = coloreDaAggiornare.toJson();
+            j["ID"] = idColore;
+            put("http://127.0.0.1:8000/colori", j);
+        }
+        else {
+            cout << "Il colore selezionato non esiste nel magazzino\n";
+        }
+    }
+    catch (const exception& e) {
+        pulisciSchermo();
+        cout << "\nErrore: quantita' non valida" << endl;
+        return;
+    }
+}
+
 
 /* VERNICI */
-/*
-Vernice deserializzaVernice(json vernice) {
-    map<int, Colore>& colori = Giacenze::colori = prelevaColori();
-    map<int, Additivo>& additivi = Giacenze::additivi = prelevaAdditivi();
-    vector<elementoFormula> formula;
-
-        for (const auto& colore : vernice["colori"]) {
-            elementoFormula elem;
-            elem.idComponente = colore["IDColore"];
-            elem.percentuale = colore["Percentuale"];
-            elem.componente = &colori.find(elem.idComponente)->second;
-            formula.push_back(elem);
-        }
-
-        for (const auto& additivo : vernice["additivi"]) {
-            elementoFormula elem;
-            elem.idComponente = additivo["IDAdditivo"];
-            elem.percentuale = additivo["Percentuale"];
-            elem.componente = &additivi.find(elem.idComponente)->second;
-            formula.push_back(elem);
-        }
-        Vernice v(vernice["nome"], vernice["quantitaKg"], vernice["PrezzoKg"], formula);
-        return v;
-}
-
-map<int, Vernice> deserializzaVernici(json j) {
-    map<int, Vernice> vernici;
-
-    for (const auto& vernice : j["vernici"]) {
-        vernici.emplace(vernice["ID"], deserializzaVernice(vernice));
-    }
-   
-    return vernici;
-}
-*/
-
 map<int, Vernice> deserializzaVernici(json j) {
     map<int, Colore>& colori = Giacenze::colori = prelevaColori();
     map<int, Additivo>& additivi = Giacenze::additivi = prelevaAdditivi();
@@ -486,12 +483,16 @@ void inserisciVernice() {
         return;
     }
     cout << " - Prezzo di vendita al Kg: ";
+    cin >> inserimentoPrezzoKg;
 
     try {
-        cin >> inserimentoPrezzoKg;
         prezzoKg = stof(inserimentoPrezzoKg);
-    } catch (const exception& e) {
+        if (prezzoKg < 0) throw exception();
+    } 
+    catch (const exception& e) {
+        pulisciSchermo();
         cout << "Errore: quantita' non valida" << endl;
+        return;
     }
 
     pulisciSchermo();
@@ -507,7 +508,9 @@ void inserisciVernice() {
             "2. Aggiungi un additivo\n";
         cin >> inserimento;
         if (inserimento == "1") {
-            visualizzaColori();
+            pulisciSchermo();
+            cout << "\nColori in magazzino: " << endl;
+            stampa(colori);
             cout << "\nInserisci l'ID del colore da aggiungere: ";
             cin >> idComponente;
             pulisciSchermo();
@@ -548,7 +551,9 @@ void inserisciVernice() {
             }
 
         } else if(inserimento == "2") {
-            visualizzaAdditivi();
+            pulisciSchermo();
+            cout << "\nColori in magazzino: " << endl;
+            stampa(additivi);
             cout << "\nInserisci l'ID dell'additivo da aggiungere: ";
             cin >> idComponente;
             pulisciSchermo();
@@ -609,7 +614,7 @@ void inserisciVernice() {
 
 void visualizzaComposizioneVernice() {
     map<int, Vernice>& vernici = Giacenze::vernici = prelevaVernici();
-    int idVernice;
+    string idVernice;
     json jsonVernice;
 
     cout << "\nVernici in magazzino: " << endl;
@@ -619,10 +624,18 @@ void visualizzaComposizioneVernice() {
 
     pulisciSchermo();
 
-    if (vernici.contains(idVernice)) {
-        vernici.find(idVernice)->second.stampaFormula();
-    } else {
-        cout << "\nVernice non valida" << endl;
+    try {
+        if (vernici.contains(stoi(idVernice))) {
+            vernici.find(stoi(idVernice))->second.stampaFormula();
+        }
+        else {
+            cout << "\nVernice non valida" << endl;
+        }
+    }
+    catch (const exception& e) {
+        pulisciSchermo();
+        cout << "Errore: quantita' non valida" << endl;
+        return;
     }
 }
 
@@ -638,48 +651,223 @@ void aggiornaQuantitaVernice() {
 
     pulisciSchermo();
 
-    if (vernici.contains(stoi(idVernice))) {
-        Vernice& verniceDaProdurre = vernici.find(stoi(idVernice))->second;
-        verniceDaProdurre.stampaFormulaConQuantitaKg();
-        
-        cout << "\nInserisci la quantita in Kg da produrre: ";
-        cin >> quantitaKgDaProdurre;
+    try {
+        if (vernici.contains(stoi(idVernice))) {
+            Vernice verniceDaProdurre = vernici.find(stoi(idVernice))->second;
+            verniceDaProdurre.stampaFormulaConQuantitaKg();
 
-        pulisciSchermo();
-       
-        cout << "\nPer la produzione di " << quantitaKgDaProdurre << "Kg di vernice " << verniceDaProdurre.getNome() << ":" << endl;
-
-        if (verniceDaProdurre.isProducibileInQuantitaKg(stof(quantitaKgDaProdurre))) {
-            cout << "\nInserire 1 per confermare, altrimenti per annullare ed uscire: ";
-            cin >> confermaProduzione;
+            cout << "\nInserisci la quantita in Kg da produrre: ";
+            cin >> quantitaKgDaProdurre;
 
             pulisciSchermo();
 
-            if (confermaProduzione == "1") {
-                for (elementoFormula elementoFormula : verniceDaProdurre.getFormula()) {
-                    componente["ID"] = elementoFormula.idComponente;
-                    componente["QuantitaKg"] = elementoFormula.componente->getQuantitaKg() - stoi(quantitaKgDaProdurre);
-                    componenti.push_back(componente);
+            cout << "\nPer la produzione di " << quantitaKgDaProdurre << "Kg di vernice " << verniceDaProdurre.getNome() << ":" << endl;
+
+            if (verniceDaProdurre.isProducibileInQuantitaKg(stof(quantitaKgDaProdurre))) {
+                cout << "\nInserire 1 per confermare, altrimenti per annullare ed uscire: ";
+                cin >> confermaProduzione;
+
+                pulisciSchermo();
+
+                if (confermaProduzione == "1") {
+                    verniceDaProdurre.setQuantitaKg(stof(quantitaKgDaProdurre));
+
+                    for (elementoFormula elementoFormula : verniceDaProdurre.getFormula()) {
+                        float quantitaCorrenteKg = elementoFormula.componente->getQuantitaKg();
+                        float quantitaNecessariaComponenteKg = stoi(quantitaKgDaProdurre) * elementoFormula.percentuale / 100.0f;
+                        elementoFormula.componente->setQuantitaKg(quantitaCorrenteKg - quantitaNecessariaComponenteKg);
+                    }
+
+                    j = verniceDaProdurre.toJson();
+                    j["ID"] = idVernice;
+
+                    verniceDaProdurre.stampaFormulaConQuantitaKg();
+
+                    put("http://127.0.0.1:8000/vernici", j);
                 }
-                j["Vernice"]["ID"] = idVernice;
-                j["Vernice"]["QuantitaKg"] = verniceDaProdurre.getQuantitaKg() + stoi(quantitaKgDaProdurre);
-                j["Componenti"] = componenti;
-                put("http://127.0.0.1:8000/vernici", j);
+                else {
+                    cout << "\nProduzione annullata" << endl;
+                }
             }
-            else
-                cout << "\nProduzione annullata" << endl;
+        }
+        else {
+            cout << "\nVernice non valida" << endl;
         }
     }
-    else {
-        cout << "\nVernice non valida" << endl;
+    catch (const exception& e) {
+        pulisciSchermo();
+        cout << "\nErrore: quantita' non valida" << endl;
+        return;
     }
-    
 }
+
+
+/* MENU */
+void menuColori() {
+    string input;
+    int scelta;
+
+    do {
+        cout << "\n***MENU COLORI***\n" <<
+            "1. Visualizza colori in magazzino\n"
+            "2. Inserisci un nuovo colore in magazzino\n"
+            "3. Aggiorna quantita' colori in magazzino\n"
+            "Altro. Esci" << endl;
+
+        cin >> input;
+
+        try {
+            scelta = stoi(input);
+        }
+        catch (const invalid_argument& e) {
+            pulisciSchermo();
+            cout << "Errore: scelta inserita non valida" << endl;
+            menuColori();
+        }
+
+        pulisciSchermo();
+
+        switch (scelta) {
+        case 1:
+            visualizzaColori();
+            break;
+
+        case 2:
+            inserisciColore();
+            break;
+
+        case 3:
+            aggiornaQuantitaColore();
+            break;
+        }
+    } while (scelta < 4);
+}
+
+void menuAdditivi() {
+    string input;
+    int scelta;
+
+    do {
+        cout << "\n***MENU ADDITIVI***\n" <<
+            "1. Visualizza additivi in magazzino\n"
+            "2. Inserisci un nuovo additivo in magazzino\n"
+            "3. Aggiorna quantita' additivi in magazzino\n"
+            "Altro. Esci" << endl;
+
+        cin >> input;
+
+        try {
+            scelta = stoi(input);
+        }
+        catch (const invalid_argument& e) {
+            pulisciSchermo();
+            cout << "Errore: scelta inserita non valida" << endl;
+            menuAdditivi();
+        }
+
+        pulisciSchermo();
+
+        switch (scelta) {
+        case 1:
+            visualizzaAdditivi();
+            break;
+
+        case 2:
+            inserisciAdditivo();
+            break;
+
+        case 3:
+            aggiornaQuantitaColore();
+            break;
+        }
+    } while (scelta < 4);
+}
+
+void menuVernici() {
+    string input;
+    int scelta;
+
+    do {
+        cout << "\n***MENU VERNICI***\n" <<
+            "1. Visualizza vernici in magazzino\n"
+            "2. Visualizza composizione vernice\n"
+            "3. Inserisci una nuova vernice in magazzino\n"
+            "4. Inizia produzione di vernice\n"
+            "Altro. Esci" << endl;
+
+        cin >> input;
+
+        try {
+            scelta = stoi(input);
+        }
+        catch (const invalid_argument& e) {
+            pulisciSchermo();
+            cout << "Errore: scelta inserita non valida" << endl;
+            menuVernici();
+        }
+
+        pulisciSchermo();
+
+        switch (scelta) {
+        case 1:
+            visualizzaVernici();
+            break;
+
+        case 2:
+            visualizzaComposizioneVernice();
+            break;
+
+        case 3:
+            inserisciVernice();
+            break;
+
+        case 4:
+            aggiornaQuantitaVernice();
+            break;
+        }
+    } while (scelta < 4);
+}
+
 
 int main() {
     string input;
     int scelta;
 
+    do {
+        cout << "\n***MENU AMMINISTRATORE***\n" <<
+            "1. Gestione Colori\n"
+            "2. Gestione Additivi\n"
+            "3. Gestione Vernici\n"
+            "Altro. Esci" << endl;
+
+        cin >> input;
+
+        try {
+            scelta = stoi(input);
+        }
+        catch (const invalid_argument& e) {
+            cout << "Errore: scelta inserita non valida" << endl;
+            return 1;
+        }
+
+        pulisciSchermo();
+
+        switch (scelta) {
+        case 1:
+            menuColori();
+            break;
+
+        case 2:
+            menuAdditivi();
+            break;
+
+        case 3:
+            menuVernici();
+            break;
+        }
+    } while (scelta < 4);
+
+    /*
     do {
         cout << "\n***MENU AMMINISTRATORE***\n" <<
             "1. Visualizza colori in magazzino\n"
@@ -742,4 +930,5 @@ int main() {
             break;
         }
     } while (scelta < 9);
+    */
 }

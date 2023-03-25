@@ -1,20 +1,30 @@
 {
-  "Componenti": [
-    {
-      "ID": 4,
-      "QuantitaKg": 17.0
-    },
-    {
-      "ID": 2,
-      "QuantitaKg": 9.5
-    },
-    {
-      "ID": 6,
-      "QuantitaKg": 19.0
-    }
-  ],
-  "Vernice": {
-    "ID": "10",
-    "QuantitaKg": 1.0
-  }
+  "Formula": {
+    "Additivi": [
+      {
+        "ID": 2,
+        "Nome": "Opacizzante",
+        "Percentuale": 25,
+        "QuantitaKg": 8.0
+      },
+      {
+        "ID": 6,
+        "Nome": "Anticorrosivo",
+        "Percentuale": 5,
+        "QuantitaKg": 19.5
+      }
+    ],
+    "Colori": [
+      {
+        "ID": 4,
+        "Nome": "Giallo",
+        "Percentuale": 70,
+        "QuantitaKg": 11.0
+      }
+    ]
+  },
+  "ID": "10",
+  "Nome": "Gialla opaca",
+  "PrezzoKg": 20.0,
+  "QuantitaKg": 10.0
 }

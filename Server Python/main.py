@@ -70,6 +70,35 @@ async def post_colori(request: Request):
         print("Errore durante l'inserimento del colore nel database:", e)
         return JSONResponse(content={"message": "Errore durante l'inserimento del colore nel database"})
 
+# Endpoint per aggiornare la quantita di un colore
+@app.put("/colori")
+async def put_colori(request: Request):
+    body = await request.json()
+
+    try:
+        conn = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            database="aziendavernici"
+        )
+
+        # Aggiornamento colore
+        cursor = conn.cursor()
+        query = "UPDATE Colori SET QuantitaKg = %s WHERE ID = %s"
+        values = (body["QuantitaKg"], body["ID"])
+        cursor.execute(query, values)
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+        return JSONResponse(content="Quantita' colore correttamente")
+
+    except Exception as e:
+        logging.error("Errore durante l'aggiornamento del database", e)
+
+    return JSONResponse(content={"message": "Errore durante l'aggiornamento"})
+
+
 # Endpoint per ottenere gli additivi dal database
 @app.get("/additivi")
 def get_additivi():
@@ -133,6 +162,35 @@ async def post_additivi(request: Request):
         print("Errore durante l'inserimento dell'additivo nel database:", e)
         return JSONResponse(content={"message": "Errore durante l'inserimento dell'additivo nel database"})
 
+# Endpoint per aggiornare la quantita di un additivo
+@app.put("/additivi")
+async def put_additivi(request: Request):
+    body = await request.json()
+
+    try:
+        conn = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            database="aziendavernici"
+        )
+
+        # Aggiornamento colore
+        cursor = conn.cursor()
+        query = "UPDATE Additivi SET QuantitaKg = %s WHERE ID = %s"
+        values = (body["QuantitaKg"], body["ID"])
+        cursor.execute(query, values)
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+        return JSONResponse(content="Quantita' additivo correttamente")
+
+    except Exception as e:
+        logging.error("Errore durante l'aggiornamento del database", e)
+
+    return JSONResponse(content={"message": "Errore durante l'aggiornamento"})
+
+
 # Endpoint per l'inserimento delle vernici nel database
 @app.post("/vernici")
 async def post_vernici(request: Request):
@@ -157,7 +215,7 @@ async def post_vernici(request: Request):
         # Inserimento composizione colori della vernice
         for colore in body["Formula"]["Colori"]:
             idColore = colore["ID"]
-            percentuale = colore["percentuale"]
+            percentuale = colore["Percentuale"]
             query = "INSERT INTO Composizione_Colori (Vernice, Colore, Percentuale) VALUES (%s, %s, %s)"
             values = (idVernice, idColore, percentuale)
             cursor.execute(query, values)
@@ -166,7 +224,7 @@ async def post_vernici(request: Request):
         # Inserimento composizione additivi della vernice
         for additivo in body["Formula"]["Additivi"]:
             idAdditivo = additivo["ID"]
-            percentuale = additivo["percentuale"]
+            percentuale = additivo["Percentuale"]
             query = "INSERT INTO Composizione_Additivi (Vernice, Additivo, Percentuale) VALUES (%s, %s, %s)"
             values = (idVernice, idAdditivo, percentuale)
             cursor.execute(query, values)
@@ -180,8 +238,8 @@ async def post_vernici(request: Request):
 
         return JSONResponse(content={"message": "Errore durante l'inserimento della vernice nel database"})
 
-    # Endpoint per ottenere gli additivi dal database
 
+# Endpoint per ottenere gli additivi dal database
 @app.get("/vernici")
 def get_vernici():
     # Connessione al database
@@ -246,35 +304,46 @@ def get_vernici():
     # Restituzione della lista di colori come JSON
     return {"vernici": vernici}
 
-# Endpoint per la richiesta PUT
+
+# Endpoint per effettuare la produzione di una vernice
 @app.put("/vernici")
 async def update_item(request: Request):
     body = await request.json()
     print(body)
 
-    # Connessione al database
-    conn = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        database="aziendavernici"
-    )
+    try:
+        conn = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            database="aziendavernici"
+        )
 
-    # Aggiornamento delle quantitaKg dei componenti
-    for componente in body["Componenti"]:
-        print("ID = ", componente["ID"], ", Nuova q.ta Kg = ", componente["QuantitaKg"])
-        query = "U"
-        #values = (idVernice, idColore, percentuale)
-        #cursor.execute(query, values)
-        #conn.commit()
+        # Aggiornamento vernice
+        cursor = conn.cursor()
+        query = "UPDATE Vernici SET QuantitaKg = %s WHERE ID = %s"
+        values = (body["QuantitaKg"], body["ID"])
+        cursor.execute(query, values)
+        conn.commit()
 
-    vernice = body["Vernice"]
-    print("ID Vernice = ", vernice["ID"], ", nuova q.ta Kg = ", vernice["QuantitaKg"])
+        # Inserimento composizione colori della vernice
+        for colore in body["Formula"]["Colori"]:
+            query = "UPDATE Colori SET QuantitaKg = %s WHERE ID = %s"
+            values = (colore["QuantitaKg"], colore["ID"])
+            cursor.execute(query, values)
+            conn.commit()
 
-    # cursor = conn.cursor()
-    #sql = "UPDATE items SET QuantitaKg = QuantitaKg - %s WHERE id = %s"
-    #val = (item_update.quantity, item_id)
-    #cursor.execute(sql, val)
+        # Inserimento composizione additivi della vernice
+        for additivo in body["Formula"]["Additivi"]:
+            query = "UPDATE Additivi SET QuantitaKg = %s WHERE ID = %s"
+            values = (additivo["QuantitaKg"], additivo["ID"])
+            cursor.execute(query, values)
+            conn.commit()
 
-    #if cursor.rowcount == 0:
-        #raise HTTPException(status_code=404, detail="Item not found")
-    return {"ok"}
+        cursor.close()
+        conn.close()
+        return JSONResponse(content="Produzione ultimata correttamente")
+
+    except Exception as e:
+        logging.error("Errore durante l'aggiornamento del database", e)
+
+    return JSONResponse(content={"message": "Errore durante la produzione"})
