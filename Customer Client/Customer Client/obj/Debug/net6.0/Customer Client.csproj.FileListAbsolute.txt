@@ -1,0 +1,15 @@
+C:\Users\Daniele\Desktop\Advanced Programming Languages\Progetto finale\Customer Client\Customer Client\bin\Debug\net6.0\Customer Client.exe
+C:\Users\Daniele\Desktop\Advanced Programming Languages\Progetto finale\Customer Client\Customer Client\bin\Debug\net6.0\Customer Client.deps.json
+C:\Users\Daniele\Desktop\Advanced Programming Languages\Progetto finale\Customer Client\Customer Client\bin\Debug\net6.0\Customer Client.runtimeconfig.json
+C:\Users\Daniele\Desktop\Advanced Programming Languages\Progetto finale\Customer Client\Customer Client\bin\Debug\net6.0\Customer Client.dll
+C:\Users\Daniele\Desktop\Advanced Programming Languages\Progetto finale\Customer Client\Customer Client\bin\Debug\net6.0\Customer Client.pdb
+C:\Users\Daniele\Desktop\Advanced Programming Languages\Progetto finale\Customer Client\Customer Client\obj\Debug\net6.0\Customer Client.csproj.AssemblyReference.cache
+C:\Users\Daniele\Desktop\Advanced Programming Languages\Progetto finale\Customer Client\Customer Client\obj\Debug\net6.0\Customer Client.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Daniele\Desktop\Advanced Programming Languages\Progetto finale\Customer Client\Customer Client\obj\Debug\net6.0\Customer Client.AssemblyInfoInputs.cache
+C:\Users\Daniele\Desktop\Advanced Programming Languages\Progetto finale\Customer Client\Customer Client\obj\Debug\net6.0\Customer Client.AssemblyInfo.cs
+C:\Users\Daniele\Desktop\Advanced Programming Languages\Progetto finale\Customer Client\Customer Client\obj\Debug\net6.0\Customer Client.csproj.CoreCompileInputs.cache
+C:\Users\Daniele\Desktop\Advanced Programming Languages\Progetto finale\Customer Client\Customer Client\obj\Debug\net6.0\Customer Client.dll
+C:\Users\Daniele\Desktop\Advanced Programming Languages\Progetto finale\Customer Client\Customer Client\obj\Debug\net6.0\refint\Customer Client.dll
+C:\Users\Daniele\Desktop\Advanced Programming Languages\Progetto finale\Customer Client\Customer Client\obj\Debug\net6.0\Customer Client.pdb
+C:\Users\Daniele\Desktop\Advanced Programming Languages\Progetto finale\Customer Client\Customer Client\obj\Debug\net6.0\Customer Client.genruntimeconfig.cache
+C:\Users\Daniele\Desktop\Advanced Programming Languages\Progetto finale\Customer Client\Customer Client\obj\Debug\net6.0\ref\Customer Client.dll
