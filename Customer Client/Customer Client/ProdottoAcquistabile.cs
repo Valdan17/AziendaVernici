@@ -11,6 +11,7 @@ namespace Customer_Client
         private int id;
         private string nome;
         private float quantita, prezzo;
+        public abstract string tipoProdotto { get; }
 
         public int ID
         {
@@ -24,13 +25,13 @@ namespace Customer_Client
             set { nome = value; }
         }
 
-        public float Quantita
+        public float QuantitaKg
         {
             get { return quantita; }
             set { quantita = value; }
         }
 
-        public float Prezzo
+        public float PrezzoKg
         {
             get { return prezzo; }
             set { prezzo = value; }

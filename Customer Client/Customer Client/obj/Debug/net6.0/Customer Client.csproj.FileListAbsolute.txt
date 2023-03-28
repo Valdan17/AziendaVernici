@@ -13,3 +13,5 @@ C:\Users\Daniele\Desktop\Advanced Programming Languages\Progetto finale\Customer
 C:\Users\Daniele\Desktop\Advanced Programming Languages\Progetto finale\Customer Client\Customer Client\obj\Debug\net6.0\Customer Client.pdb
 C:\Users\Daniele\Desktop\Advanced Programming Languages\Progetto finale\Customer Client\Customer Client\obj\Debug\net6.0\Customer Client.genruntimeconfig.cache
 C:\Users\Daniele\Desktop\Advanced Programming Languages\Progetto finale\Customer Client\Customer Client\obj\Debug\net6.0\ref\Customer Client.dll
+C:\Users\Daniele\Desktop\Advanced Programming Languages\Progetto finale\Customer Client\Customer Client\bin\Debug\net6.0\Newtonsoft.Json.dll
+C:\Users\Daniele\Desktop\Advanced Programming Languages\Progetto finale\Customer Client\Customer Client\obj\Debug\net6.0\Customer Client.csproj.CopyComplete

@@ -9,15 +9,8 @@ namespace Customer_Client
 {
     public class Vernice : ProdottoAcquistabile 
     {
-        public float PrezzoKg { 
-            get { return Prezzo; } 
-            set { Prezzo = value; } 
-        }
-
-        public float QuantitaKg
-        {
-            get { return Quantita; }
-            set { Quantita = value; }
+        public override string tipoProdotto 
+        { get { return "Vernice"; } 
         }
 
         public Vernice(int ID, string nome, float quantitaKg, float prezzoKg) : base(ID, nome, quantitaKg, prezzoKg) {
@@ -25,8 +18,7 @@ namespace Customer_Client
 
         public override void Stampa()
         {
-            Console.WriteLine(ID + ". Vernice " + Nome + " - Q.tà disponibile: " + QuantitaKg + "Kg - " + PrezzoKg + " Euro/Kg");
+            Console.WriteLine(" " + ID + ". Vernice " + Nome + " - Q.tà disponibile: " + QuantitaKg + "Kg - " + PrezzoKg + " Euro/Kg");
         }
-
     }
 }

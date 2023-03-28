@@ -1,19 +1,30 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Specialized;
 using System.Net.Http.Json;
+using System.Text;
 using System.Transactions;
+using System.Xml.Resolvers;
 
 namespace Customer_Client
 {
     class Program
     {
+        static async Task<string> Post(string url, string json)
+        {
+            using var client = new HttpClient();
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await client.PostAsync(url, content);
+            return await response.Content.ReadAsStringAsync();
+        }
+
         static async Task Main(string[] args)
         {
             int scelta;
-            
+
             do
             {
-                Console.WriteLine("\n***MENU CLIENTE***: \n" +
+                Console.Write("\n***MENU CLIENTE***: \n" +
                     " - 1. Visualizza vernici\n" +
                     " - 2. Effettua un ordine\n" +
                     " - Altro. Esci\n" +
@@ -34,9 +45,9 @@ namespace Customer_Client
                         break;
 
                     case 2:
-                        Console.WriteLine("Effettuo un ordine...");
+                        await EffettuaOrdine();
                         break;
-                    
+
                     default:
                         Console.WriteLine("\nUscita...");
                         return;
@@ -44,6 +55,103 @@ namespace Customer_Client
             } while (scelta != 0);
         }
 
+        static async Task VisualizzaVernici()
+        {
+            await Database.StampaVernici();
+        }
+
+        static async Task EffettuaOrdine()
+        {
+            int idVerniceDaOrdinare;
+            float quantitaInKgDaOrdinare, importoTotale = 0;
+            string ripetiInserimento;
+            Vernice verniceDaOrdinare;
+            List<RigaDiVendita<ProdottoAcquistabile>> righeDiVendita = new List<RigaDiVendita<ProdottoAcquistabile>>();
+            Ordine ordineDaEffettuare;
+
+            await Database.PrelevaVernici();
+
+            if(Database.Vernici.Count > 0)
+            {
+                do
+                {
+                    Console.Clear();
+
+                    if(righeDiVendita.Count > 0)
+                    {
+                        Console.WriteLine("\nOrdine attuale: " + importoTotale + " Euro");
+                        foreach(RigaDiVendita<ProdottoAcquistabile> rigaDiVendita in righeDiVendita)
+                        {
+                            rigaDiVendita.Stampa();
+                        }
+                    }
+
+                    await Database.VisualizzaVernici();
+                    Console.Write("\nInserisci l'ID della vernice da ordinare: ");
+                    if (int.TryParse(Console.ReadLine(), out idVerniceDaOrdinare))
+                    {
+                        Console.Clear();
+                        verniceDaOrdinare = Database.Vernici.Find(vernice => vernice.ID == idVerniceDaOrdinare);
+                        if (Database.Vernici.Contains(verniceDaOrdinare)) {
+                            Console.WriteLine("\nHai scelto la vernice: ");
+                            verniceDaOrdinare.Stampa();
+                            Console.Write("\nInserisci la quantita' in Kg da ordinare: ");
+                            if (float.TryParse(Console.ReadLine(), out quantitaInKgDaOrdinare))
+                            {
+                                RigaDiVendita<ProdottoAcquistabile> r = new RigaDiVendita<ProdottoAcquistabile>(verniceDaOrdinare, quantitaInKgDaOrdinare);
+                                Console.WriteLine("\nRiepilogo: ");
+                                r.Stampa();
+                                Console.Write("\nInserisci 1 per confermare: ");
+                                if (Console.ReadLine().Equals("1"))
+                                {
+                                    righeDiVendita.Add(r);
+                                    importoTotale += r.Importo;
+                                } 
+                            }
+                            else
+                            {
+                                Console.WriteLine("La quantita' inserita non è valida\n");
+
+                            }
+                        }
+                        else {
+                            Console.WriteLine("\nVernice non esistente");
+                        }
+                        
+                    } else
+                    {
+                        Console.WriteLine("\nScelta non valida.");
+                    }
+
+                    Console.Write("\nPremi 1 per scegliere un altro prodotto: ");
+                    ripetiInserimento = Console.ReadLine();
+
+                } while (ripetiInserimento.Equals("1"));
+
+                Console.Clear();
+                if(righeDiVendita.Count > 0)
+                {
+                    ordineDaEffettuare = new Ordine(righeDiVendita, importoTotale);
+                    Console.WriteLine("Riepilogo ordine: ");
+                    ordineDaEffettuare.Stampa();
+                    Console.Write("\nInserisci 1 per confermare l'ordine, altrimenti per uscire: ");
+                    if (Console.ReadLine().Equals("1"))
+                    {
+                        string json = JsonConvert.SerializeObject(ordineDaEffettuare);
+                        Console.WriteLine(json);
+                        string response = await Post("http://localhost:8000/ordini", json);
+                        Console.WriteLine(response); 
+                    }
+                }
+                Console.WriteLine("Termine ordine...");
+
+            } else
+            {
+                Console.WriteLine("Impossibile effettuare ordini al momento");
+            }
+        }
+
+        /*
         static async Task VisualizzaVernici()
         {
             var client = new HttpClient();
@@ -68,6 +176,8 @@ namespace Customer_Client
     class JsonData
     {
         public Vernice[] Vernici { get; set; }
+    }
+        */
     }
 }
 

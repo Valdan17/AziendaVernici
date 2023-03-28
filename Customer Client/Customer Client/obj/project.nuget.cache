@@ -1,8 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "P0Q3g9wlcTIUPSEO8lfENXOUtUoenOjnuvKvCUcJsGBM0M+hw8E5vB+NwRxSA65qe6rrlfC5Q0DSPewDdum32A==",
+  "dgSpecHash": "iocfNqKpJP3ctGcypnbLHL5qb3ZXbIrJ2Twoehldu5Rh6lQl8aUNzb6R4sW5wYSF/KbcfehoJT5+wqZtGcEEkQ==",
   "success": true,
   "projectFilePath": "C:\\Users\\Daniele\\Desktop\\Advanced Programming Languages\\Progetto finale\\Customer Client\\Customer Client\\Customer Client.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\Daniele\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512"
+  ],
   "logs": []
 }
