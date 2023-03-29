@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Specialized;
+using System.Dynamic;
 using System.Net.Http.Json;
 using System.Text;
 using System.Transactions;
@@ -10,19 +11,33 @@ namespace Customer_Client
 {
     class Program
     {
-        static async Task<string> Post(string url, string json)
+        static string usernameUtenteLoggato;
+
+        static async Task<HttpResponseMessage> Post(string url, string json)
         {
             using var client = new HttpClient();
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             var response = await client.PostAsync(url, content);
-            return await response.Content.ReadAsStringAsync();
+            return response;
         }
 
-        static async Task Main(string[] args)
+        static async Task<string> Get(string url)
+        {
+            using (var client = new HttpClient())
+            {
+                var response = await client.GetAsync(url);
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+
+                return jsonResponse;
+
+            }
+        }
+
+        static async Task Menu()
         {
             int scelta;
 
-            do
+            while (true)
             {
                 Console.Write("\n***MENU CLIENTE***: \n" +
                     " - 1. Visualizza vernici\n" +
@@ -32,6 +47,7 @@ namespace Customer_Client
 
                 if (!int.TryParse(Console.ReadLine(), out scelta))
                 {
+                    Console.Clear();
                     Console.WriteLine("\nScelta non valida.");
                     continue;
                 }
@@ -52,7 +68,69 @@ namespace Customer_Client
                         Console.WriteLine("\nUscita...");
                         return;
                 }
-            } while (scelta != 0);
+            }
+        }
+
+        static async Task<bool> Autentica()
+        {
+            //bool isAutenticato = true;
+            Dictionary<string, string> credenziali = new Dictionary<string, string>();
+
+            Console.Write("\nUsername: ");
+            string username = Console.ReadLine();
+            Console.Write("Password: ");
+            string password = "";
+            while (true)
+            {
+                ConsoleKeyInfo key = Console.ReadKey(true);
+                if (key.Key == ConsoleKey.Enter)
+                    break;
+                password += key.KeyChar;
+                Console.Write("*");
+            }
+
+            Console.Clear();
+            credenziali.Add("Username", username);
+            credenziali.Add("Password", password);
+
+            var response = await Post("http://localhost:8000/clienti", JsonConvert.SerializeObject(credenziali));
+
+            if (response.IsSuccessStatusCode)
+            {
+                usernameUtenteLoggato = username;
+                var responseJson = await response.Content.ReadAsStringAsync();
+                return bool.Parse(responseJson);
+            }
+            else
+            {
+                throw new Exception();
+            }
+        }
+
+        static async Task Main(string[] args)
+        {
+            while (true)
+            {
+                try
+                {
+                    bool isAutenticato = await Autentica();
+
+                    if (isAutenticato)
+                    {
+                        Console.WriteLine("Benvenuto " + usernameUtenteLoggato);
+                        await Menu();
+                    }
+                    else
+                    {
+                        Console.WriteLine("\nCredenziali errate");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("\nErrore di connessione al server");
+                }
+            }
+
         }
 
         static async Task VisualizzaVernici()
@@ -71,16 +149,16 @@ namespace Customer_Client
 
             await Database.PrelevaVernici();
 
-            if(Database.Vernici.Count > 0)
+            if (Database.Vernici.Count > 0)
             {
                 do
                 {
                     Console.Clear();
 
-                    if(righeDiVendita.Count > 0)
+                    if (righeDiVendita.Count > 0)
                     {
                         Console.WriteLine("\nOrdine attuale: " + importoTotale + " Euro");
-                        foreach(RigaDiVendita<ProdottoAcquistabile> rigaDiVendita in righeDiVendita)
+                        foreach (RigaDiVendita<ProdottoAcquistabile> rigaDiVendita in righeDiVendita)
                         {
                             rigaDiVendita.Stampa();
                         }
@@ -92,7 +170,8 @@ namespace Customer_Client
                     {
                         Console.Clear();
                         verniceDaOrdinare = Database.Vernici.Find(vernice => vernice.ID == idVerniceDaOrdinare);
-                        if (Database.Vernici.Contains(verniceDaOrdinare)) {
+                        if (Database.Vernici.Contains(verniceDaOrdinare))
+                        {
                             Console.WriteLine("\nHai scelto la vernice: ");
                             verniceDaOrdinare.Stampa();
                             Console.Write("\nInserisci la quantita' in Kg da ordinare: ");
@@ -104,9 +183,16 @@ namespace Customer_Client
                                 Console.Write("\nInserisci 1 per confermare: ");
                                 if (Console.ReadLine().Equals("1"))
                                 {
-                                    righeDiVendita.Add(r);
-                                    importoTotale += r.Importo;
-                                } 
+                                    // Controllo se quella vernice è stata già inserita e nel caso la sostituisco
+                                    if (righeDiVendita.Exists(riga => riga.Prodotto is Vernice && riga.Prodotto == verniceDaOrdinare))
+                                    {
+                                        importoTotale -= (righeDiVendita.Find(riga => riga.Prodotto == verniceDaOrdinare)).Importo;
+                                        righeDiVendita.Remove(righeDiVendita.Find(riga => riga.Prodotto == verniceDaOrdinare));
+                                    }
+
+                                }
+                                righeDiVendita.Add(r);
+                                importoTotale += r.Importo;
                             }
                             else
                             {
@@ -114,11 +200,13 @@ namespace Customer_Client
 
                             }
                         }
-                        else {
+                        else
+                        {
                             Console.WriteLine("\nVernice non esistente");
                         }
-                        
-                    } else
+
+                    }
+                    else
                     {
                         Console.WriteLine("\nScelta non valida.");
                     }
@@ -129,7 +217,7 @@ namespace Customer_Client
                 } while (ripetiInserimento.Equals("1"));
 
                 Console.Clear();
-                if(righeDiVendita.Count > 0)
+                if (righeDiVendita.Count > 0)
                 {
                     ordineDaEffettuare = new Ordine(righeDiVendita, importoTotale);
                     Console.WriteLine("Riepilogo ordine: ");
@@ -138,145 +226,31 @@ namespace Customer_Client
                     if (Console.ReadLine().Equals("1"))
                     {
                         string json = JsonConvert.SerializeObject(ordineDaEffettuare);
-                        Console.WriteLine(json);
-                        string response = await Post("http://localhost:8000/ordini", json);
-                        Console.WriteLine(response); 
+                        Console.WriteLine("json che invio e': " + json);
+
+                        var response = await Post("http://localhost:8000/ordini", json);
+                        Console.WriteLine("Response che ricevo e': " + response);
+
+                        if (response.IsSuccessStatusCode)
+                        {
+                            var responseJson = await response.Content.ReadAsStringAsync();
+                            Console.WriteLine("Response che converto in string e': " + responseJson);
+                        }
+                        else
+                        {
+                            throw new Exception();
+                        }
+
+                        Console.WriteLine(response);
                     }
                 }
                 Console.WriteLine("Termine ordine...");
 
-            } else
+            }
+            else
             {
                 Console.WriteLine("Impossibile effettuare ordini al momento");
             }
         }
-
-        /*
-        static async Task VisualizzaVernici()
-        {
-            var client = new HttpClient();
-            var response = await client.GetAsync("http://localhost:8000/vernici");
-            var jsonData = await response.Content.ReadFromJsonAsync<JsonData>();
-
-            // json j;
-
-            // for(Vernice v : j["vernici"]) {
-
-
-            Console.WriteLine("\nVernici in magazzino:");
-            foreach (var vernice in jsonData.Vernici)
-            {
-                //Console.WriteLine($"ID: {vernice.ID}, Nome: {vernice.Nome}, Quantità: {vernice.QuantitaKg} kg, Prezzo: {vernice.PrezzoKg} €/kg");
-                vernice.Stampa();
-
-            }
-        }
-    }
-    
-    class JsonData
-    {
-        public Vernice[] Vernici { get; set; }
-    }
-        */
     }
 }
-
-/*
-using System;
-using System.Net.Http;
-using System.Text.Json;
-using System.Threading.Tasks;
-
-namespace VerniciApp
-{
-    class Program
-    {
-        static async Task Main(string[] args)
-        {
-            Console.WriteLine("Benvenuto nella VerniciApp!");
-
-            while (true)
-            {
-                Console.WriteLine("Cosa vuoi fare?");
-                Console.WriteLine("1. Visualizza Vernici");
-                Console.WriteLine("2. Effettua ordine");
-                Console.WriteLine("3. Esci");
-
-                int scelta = int.Parse(Console.ReadLine());
-
-                switch (scelta)
-                {
-                    case 1:
-                        await VisualizzaVernici();
-                        break;
-                    case 2:
-                        await EffettuaOrdine();
-                        break;
-                    case 3:
-                        Console.WriteLine("Arrivederci!");
-                        return;
-                    default:
-                        Console.WriteLine("Scelta non valida, riprova.");
-                        break;
-                }
-            }
-        }
-
-        static async Task VisualizzaVernici()
-        {
-            using var client = new HttpClient();
-            var response = await client.GetAsync("http://localhost:8000/vernici");
-            response.EnsureSuccessStatusCode();
-            var jsonString = await response.Content.ReadAsStringAsync();
-            var vernici = JsonSerializer.Deserialize<Vernice[]>(jsonString);
-
-            Console.WriteLine("ID\tNome\tQuantità disponibile\tPrezzo al kg");
-            Console.WriteLine("-----------------------------------------------");
-
-            foreach (var vernice in vernici)
-            {
-                Console.WriteLine($"{vernice.Id}\t{vernice.Nome}\t{vernice.QuantitaDisponibile} kg\t\t{vernice.Prezzo} €/kg");
-            }
-        }
-
-        static async Task EffettuaOrdine()
-        {
-            Console.WriteLine("Inserisci l'ID della Vernice che vuoi ordinare:");
-            int id = int.Parse(Console.ReadLine());
-
-            Console.WriteLine("Inserisci la quantità di Vernice che vuoi ordinare (in kg):");
-            int quantita = int.Parse(Console.ReadLine());
-
-            using var client = new HttpClient();
-            var response = await client.GetAsync($"http://localhost:8000/vernici/{id}");
-            response.EnsureSuccessStatusCode();
-            var jsonString = await response.Content.ReadAsStringAsync();
-            var vernice = JsonSerializer.Deserialize<Vernice>(jsonString);
-
-            if (quantita <= vernice.QuantitaDisponibile)
-            {
-                var ordine = new Ordine
-                {
-                    IdVernice = id,
-                    Quantita = quantita,
-                    Stato = "Completato"
-                };
-
-                var ordineJson = JsonSerializer.Serialize(ordine);
-                var content = new StringContent(ordineJson, System.Text.Encoding.UTF8, "application/json");
-
-                var postResponse = await client.PostAsync("http://localhost:8000/ordini", content);
-                postResponse.EnsureSuccessStatusCode();
-
-                vernice.QuantitaDisponibile -= quantita;
-                var verniceJson = JsonSerializer.Serialize(vernice);
-                var updateContent = new StringContent(verniceJson, System.Text.Encoding.UTF8, "application/json");
-                var putResponse = await client.PutAsync($"http://localhost:8000/vernici/{id}", updateContent);
-                putResponse.EnsureSuccessStatusCode();
-
-                Console.WriteLine("Ordine completato con successo");
-            }
-        }
-    }
-}
-*/

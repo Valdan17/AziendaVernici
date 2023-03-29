@@ -7,6 +7,36 @@ import mysql.connector
 
 app = FastAPI()
 
+# Endpoint per l'autenticazione dei clienti nel database
+@app.post("/clienti")
+async def post_cliente(request: Request):
+    body = await request.json()
+    print(body)
+    username = body["Username"]
+    password = body["Password"]
+
+    conn = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        database="aziendavernici"
+    )
+
+    mycursor = conn.cursor()
+    sql = "SELECT * FROM Clienti WHERE Username = %s AND Password = %s"
+    val = (username, password)
+    mycursor.execute(sql, val)
+    result = mycursor.fetchone()
+
+    # Close the database connection
+    conn.close()
+
+    # Return a boolean indicating whether the credentials exist in the database
+    if result:
+        return True
+    else:
+        return False
+
+
 # Endpoint per ottenere i colori dal database
 @app.get("/colori")
 def get_colori():
@@ -347,3 +377,25 @@ async def update_item(request: Request):
         logging.error("Errore durante l'aggiornamento del database", e)
 
     return JSONResponse(content={"message": "Errore durante la produzione"})
+
+
+# Endpoint per l'inserimento degli ordini nel database
+@app.post("/ordini")
+async def post_ordini(request: Request):
+    body = await request.json()
+    print(body)
+
+    try:
+        conn = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            database="aziendavernici"
+        )
+
+
+        conn.close()
+        return JSONResponse(content="Ordine inserito correttamente nel database")
+    except Exception as e:
+        logging.error("Errore durante l'inserimento nel database", e)
+
+        return JSONResponse(content={"message": "Errore durante l'elaborazione dell'ordine nel database"})

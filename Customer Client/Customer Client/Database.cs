@@ -29,7 +29,7 @@ namespace Customer_Client
             get { return vernici; }
         }
 
-        public static async Task<string> get(string url)
+        public static async Task<string> Get(string url)
         {
             using (var client = new HttpClient())
             {
@@ -37,7 +37,6 @@ namespace Customer_Client
                 var jsonResponse = await response.Content.ReadAsStringAsync();
 
                 return jsonResponse;
-
             }
         }
 
@@ -45,7 +44,7 @@ namespace Customer_Client
         {
             vernici.Clear();
 
-            var jsonResponse = await get("http://localhost:8000/vernici");
+            var jsonResponse = await Get("http://localhost:8000/vernici");
 
             // Analizza il JSON e estrae la lista di vernici
             var result = JsonConvert.DeserializeObject<Dictionary<string, List<Dictionary<string, object>>>>(jsonResponse);
