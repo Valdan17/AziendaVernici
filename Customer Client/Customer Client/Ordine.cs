@@ -9,9 +9,15 @@ namespace Customer_Client
 {
     internal class Ordine
     {
+        private string cliente;
         private List<RigaDiVendita<ProdottoAcquistabile>> righeDiVendita;
         private float importoTotale;
-        //private bool completato;
+
+        public string Cliente
+        {
+            get { return cliente; } 
+            private set { cliente = value; }
+        }
 
         public List<RigaDiVendita<ProdottoAcquistabile>> RigheDiVendita 
         {
@@ -25,8 +31,9 @@ namespace Customer_Client
             private set { importoTotale = value; }
         }
 
-        public Ordine(List<RigaDiVendita<ProdottoAcquistabile>> righeDiVendita, float importoTotale)
+        public Ordine(string cliente, List<RigaDiVendita<ProdottoAcquistabile>> righeDiVendita, float importoTotale)
         {
+            this.cliente = cliente;
             this.righeDiVendita = righeDiVendita;
             this.importoTotale = importoTotale;
         }
@@ -37,7 +44,7 @@ namespace Customer_Client
             {
                 righeDiVendita.Stampa();
             }
-            Console.WriteLine("Importo totale: " + importoTotale);
+            Console.WriteLine("Importo totale: " + importoTotale + " Euro");
         }
 
 

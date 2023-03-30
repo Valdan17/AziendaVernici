@@ -134,7 +134,7 @@ void post(string url, json j) {
     // Esegue la richiesta
     CURLcode res = curl_easy_perform(curl);
     if (res != CURLE_OK) {
-        cerr << "Errore nella richiesta cURL: " << curl_easy_strerror(res) << endl;
+        cerr << "\nErrore nella richiesta cURL: " << curl_easy_strerror(res) << endl;
     }
 
     // Pulisce
@@ -167,7 +167,7 @@ void put(string url, json j)
     // Esegue la richiesta
     CURLcode res = curl_easy_perform(curl);
     if (res != CURLE_OK) {
-        cerr << "Errore: impossibile eseguire la richiesta: " << curl_easy_strerror(res) << std::endl;
+        cerr << "\nErrore: impossibile eseguire la richiesta: " << curl_easy_strerror(res) << std::endl;
     }
 
     // Rilascia l'handle di curl
@@ -228,8 +228,9 @@ void inserisciAdditivo() {
 
     try {
         quantitaKg = stof(inserimentoQuantitaKg);
+        if (quantitaKg <= 0) throw exception();
     }
-    catch (const invalid_argument& e) {
+    catch (const exception e) {
         pulisciSchermo();
         cout << "Errore: quantita' non valida" << endl;
         return;
@@ -349,7 +350,8 @@ void inserisciColore() {
 
     try {
         quantitaKg = stof(inserimentoQuantitaKg);
-    } catch (const invalid_argument& e) {
+        if (quantitaKg <= 0) throw exception();
+    } catch (const exception& e) {
         pulisciSchermo();
         cout << "Errore: quantita' non valida" << endl;
         return;
@@ -659,6 +661,8 @@ void aggiornaQuantitaVernice() {
             cout << "\nInserisci la quantita in Kg da produrre: ";
             cin >> quantitaKgDaProdurre;
 
+            if ( stof(quantitaKgDaProdurre) <= 0.0f) throw exception();
+
             pulisciSchermo();
 
             cout << "\nPer la produzione di " << quantitaKgDaProdurre << "Kg di vernice " << verniceDaProdurre.getNome() << ":" << endl;
@@ -866,69 +870,4 @@ int main() {
             break;
         }
     } while (scelta < 4);
-
-    /*
-    do {
-        cout << "\n***MENU AMMINISTRATORE***\n" <<
-            "1. Visualizza colori in magazzino\n"
-            "2. Visualizza additivi in magazzino\n"
-            "3. Visualizza vernici in magazzino\n"
-            "4. Visualizza composizione vernice\n"
-            "5. Inserisci nuovo colore in magazzino\n"
-            "6. Inserisci nuovo additivo in magazzino\n"
-            "7. Inserisci nuova vernice in magazzino\n"
-            "8. Produzione di vernice\n"
-            "Altro. Esci" << endl;
-
-        cin >> input;
-
-        try {
-            scelta = stoi(input);
-        }
-        catch (const invalid_argument& e) {
-            cout << "Errore: scelta inserita non valida" << endl;
-            return 1;
-        }
-
-        pulisciSchermo();
-
-        switch (scelta) {
-        case 1: // Visualizza colori
-            visualizzaColori();
-            break;
-
-        case 2: // Visualizza additivi
-            visualizzaAdditivi();
-            break;
-
-        case 3: // Visualizza vernici
-            visualizzaVernici();
-            break;
-
-        case 4:
-            visualizzaComposizioneVernice();
-            break;
-
-        case 5: // Inserisci nuovo Colore
-            inserisciColore();
-            break;
-
-        case 6: // Inserisci nuovo additivo
-            inserisciAdditivo();
-            break;
-
-        case 7: // Inserisci nuova vernice
-            inserisciVernice();
-            break;
-
-        case 8: // Aggiorna quantità vernice
-            aggiornaQuantitaVernice();
-            break;
-
-        default:
-            cout << "Esco...\n" << endl;
-            break;
-        }
-    } while (scelta < 9);
-    */
 }

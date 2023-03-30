@@ -1,0 +1,17 @@
+{
+  "Cliente": "prova",
+  "RigheDiVendita": [
+    {
+      "QuantitaKg": 1.0,
+      "Importo": 20.0,
+      "Prodotto": {
+        "tipoProdotto": "Vernice",
+        "ID": 10,
+        "Nome": "Gialla opaca",
+        "QuantitaKg": 0.0,
+        "PrezzoKg": 20.0
+      }
+    }
+  ],
+  "ImportoTotale": 20.0
+}

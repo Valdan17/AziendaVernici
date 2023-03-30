@@ -149,107 +149,133 @@ namespace Customer_Client
 
             await Database.PrelevaVernici();
 
-            if (Database.Vernici.Count > 0)
-            {
-                do
+            try {
+                // Se il magazzino contiene delle vernici, iniziamo l'ordine
+                if (Database.Vernici.Count > 0)
                 {
-                    Console.Clear();
-
-                    if (righeDiVendita.Count > 0)
-                    {
-                        Console.WriteLine("\nOrdine attuale: " + importoTotale + " Euro");
-                        foreach (RigaDiVendita<ProdottoAcquistabile> rigaDiVendita in righeDiVendita)
-                        {
-                            rigaDiVendita.Stampa();
-                        }
-                    }
-
-                    await Database.VisualizzaVernici();
-                    Console.Write("\nInserisci l'ID della vernice da ordinare: ");
-                    if (int.TryParse(Console.ReadLine(), out idVerniceDaOrdinare))
+                    do
                     {
                         Console.Clear();
-                        verniceDaOrdinare = Database.Vernici.Find(vernice => vernice.ID == idVerniceDaOrdinare);
-                        if (Database.Vernici.Contains(verniceDaOrdinare))
+
+                        // Se siamo alla 2° o + iterazione, stampiamo il carrello
+                        if (righeDiVendita.Count > 0)
                         {
-                            Console.WriteLine("\nHai scelto la vernice: ");
-                            verniceDaOrdinare.Stampa();
-                            Console.Write("\nInserisci la quantita' in Kg da ordinare: ");
-                            if (float.TryParse(Console.ReadLine(), out quantitaInKgDaOrdinare))
+                            Console.WriteLine("\nOrdine attuale: " + importoTotale + " Euro");
+                            foreach (RigaDiVendita<ProdottoAcquistabile> rigaDiVendita in righeDiVendita)
                             {
-                                RigaDiVendita<ProdottoAcquistabile> r = new RigaDiVendita<ProdottoAcquistabile>(verniceDaOrdinare, quantitaInKgDaOrdinare);
-                                Console.WriteLine("\nRiepilogo: ");
-                                r.Stampa();
-                                Console.Write("\nInserisci 1 per confermare: ");
-                                if (Console.ReadLine().Equals("1"))
+                                rigaDiVendita.Stampa();
+                            }
+                        }
+
+                        await Database.VisualizzaVernici();
+                        Console.Write("\nInserisci l'ID della vernice da ordinare: ");
+
+                        // Verifico se l'ID inserito è numericamente valido
+                        if (int.TryParse(Console.ReadLine(), out idVerniceDaOrdinare))
+                        {
+                            Console.Clear();
+                            verniceDaOrdinare = Database.Vernici.Find(vernice => vernice.ID == idVerniceDaOrdinare);
+
+                            // Verifico se l'ID inserito corrisponda effettivamente ad una vernice nel magazzino
+                            if (Database.Vernici.Contains(verniceDaOrdinare))
+                            {
+                                Console.WriteLine("\nHai scelto la vernice: ");
+                                verniceDaOrdinare.Stampa();
+                                Console.Write("\nInserisci la quantita' in Kg da ordinare: ");
+
+                                // Verifico se la quantita in Kg inserita è numericamente valida
+                                if (float.TryParse(Console.ReadLine(), out quantitaInKgDaOrdinare))
                                 {
-                                    // Controllo se quella vernice è stata già inserita e nel caso la sostituisco
-                                    if (righeDiVendita.Exists(riga => riga.Prodotto is Vernice && riga.Prodotto == verniceDaOrdinare))
+                                    if (quantitaInKgDaOrdinare > 0)
                                     {
-                                        importoTotale -= (righeDiVendita.Find(riga => riga.Prodotto == verniceDaOrdinare)).Importo;
-                                        righeDiVendita.Remove(righeDiVendita.Find(riga => riga.Prodotto == verniceDaOrdinare));
+                                        RigaDiVendita<ProdottoAcquistabile> r = new RigaDiVendita<ProdottoAcquistabile>(verniceDaOrdinare, quantitaInKgDaOrdinare);
+                                        Console.WriteLine("\nRiepilogo: ");
+                                        r.Stampa();
+                                        Console.Write("\nInserisci 1 per confermare: ");
+
+                                        // Verifico se il cliente conferma di aggiungere nel carrello la vernice selezionata nella quantità inserita
+                                        if (Console.ReadLine().Equals("1"))
+                                        {
+                                            // Verifico se quella vernice è stata già inserita nel carrello precedentemente e nel caso la sostituisco
+                                            if (righeDiVendita.Exists(riga => riga.Prodotto is Vernice && riga.Prodotto == verniceDaOrdinare))
+                                            {
+                                                importoTotale -= (righeDiVendita.Find(riga => riga.Prodotto == verniceDaOrdinare)).Importo;
+                                                righeDiVendita.Remove(righeDiVendita.Find(riga => riga.Prodotto == verniceDaOrdinare));
+                                            }
+
+                                        }
+                                        righeDiVendita.Add(r);
+                                        importoTotale += r.Importo;
+                                    } else
+                                    {
+                                        Console.WriteLine("La quantita inserita non può essere pari o inferiore a 0Kg");
                                     }
+                                }
+                                else
+                                {
+                                    Console.WriteLine("La quantita' inserita non è valida\n");
 
                                 }
-                                righeDiVendita.Add(r);
-                                importoTotale += r.Importo;
                             }
                             else
                             {
-                                Console.WriteLine("La quantita' inserita non è valida\n");
+                                Console.WriteLine("\nVernice non esistente");
+                            }
+
+                        }
+                        else
+                        {
+                            Console.WriteLine("\nScelta non valida.");
+                        }
+
+                        Console.Write("\nPremi 1 per scegliere un altro prodotto: ");
+                        ripetiInserimento = Console.ReadLine();
+
+                    } while (ripetiInserimento.Equals("1"));
+
+                    Console.Clear();
+                    if (righeDiVendita.Count > 0)
+                    {
+                        ordineDaEffettuare = new Ordine(usernameUtenteLoggato, righeDiVendita, importoTotale);
+                        Console.WriteLine("Riepilogo ordine: ");
+                        ordineDaEffettuare.Stampa();
+                        Console.Write("\nInserisci 1 per confermare l'ordine, altrimenti per uscire: ");
+                        if (Console.ReadLine().Equals("1"))
+                        {
+                            string json = JsonConvert.SerializeObject(ordineDaEffettuare);
+
+                            var response = await Post("http://localhost:8000/ordini", json);
+                            //Console.WriteLine("Response che ricevo e': " + response);
+
+                            if (response.IsSuccessStatusCode)
+                            {
+                                var responseJson = await response.Content.ReadAsStringAsync();
+                                Console.WriteLine("Response che converto in string e': " + responseJson);
 
                             }
-                        }
-                        else
+                            else
+                            {
+                                throw new Exception();
+                            }
+
+                            Console.WriteLine(response);
+                        } else
                         {
-                            Console.WriteLine("\nVernice non esistente");
+                            Console.Clear();
+                            Console.WriteLine("Termine ordine...");
+
                         }
-
-                    }
-                    else
-                    {
-                        Console.WriteLine("\nScelta non valida.");
-                    }
-
-                    Console.Write("\nPremi 1 per scegliere un altro prodotto: ");
-                    ripetiInserimento = Console.ReadLine();
-
-                } while (ripetiInserimento.Equals("1"));
-
-                Console.Clear();
-                if (righeDiVendita.Count > 0)
-                {
-                    ordineDaEffettuare = new Ordine(righeDiVendita, importoTotale);
-                    Console.WriteLine("Riepilogo ordine: ");
-                    ordineDaEffettuare.Stampa();
-                    Console.Write("\nInserisci 1 per confermare l'ordine, altrimenti per uscire: ");
-                    if (Console.ReadLine().Equals("1"))
-                    {
-                        string json = JsonConvert.SerializeObject(ordineDaEffettuare);
-                        Console.WriteLine("json che invio e': " + json);
-
-                        var response = await Post("http://localhost:8000/ordini", json);
-                        Console.WriteLine("Response che ricevo e': " + response);
-
-                        if (response.IsSuccessStatusCode)
-                        {
-                            var responseJson = await response.Content.ReadAsStringAsync();
-                            Console.WriteLine("Response che converto in string e': " + responseJson);
-                        }
-                        else
-                        {
-                            throw new Exception();
-                        }
-
-                        Console.WriteLine(response);
                     }
                 }
-                Console.WriteLine("Termine ordine...");
-
+                else
+                {
+                    Console.WriteLine("Impossibile effettuare ordini al momento");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                Console.WriteLine("Impossibile effettuare ordini al momento");
+                Console.Clear();
+                Console.WriteLine("\nErrore di connessione al server");
             }
         }
     }
