@@ -14,7 +14,6 @@ app = FastAPI()
 @app.post("/clienti")
 async def post_cliente(request: Request):
     body = await request.json()
-    print(body)
     username = body["Username"]
     password = body["Password"]
 
@@ -342,7 +341,6 @@ def get_vernici():
 @app.put("/vernici")
 async def update_item(request: Request):
     body = await request.json()
-    print(body)
 
     try:
         conn = mysql.connector.connect(
@@ -443,7 +441,6 @@ class jsonOrdine(BaseModel):
 # Endpoint per l'inserimento di un nuovo ordine
 @app.post("/ordini")
 async def inserisci_ordine(ordine: jsonOrdine):
-    print(ordine)
 
     # Connessione al database MySQL/MariaDB
     conn = mysql.connector.connect(
@@ -508,7 +505,7 @@ async def inserisci_ordine(ordine: jsonOrdine):
 @app.put("/ordini")
 async def get_ordini(request: Request):
     username = await request.json()
-    print(username)
+
     # Connessione al database
     conn = mysql.connector.connect(
         host="localhost",
@@ -527,7 +524,6 @@ async def get_ordini(request: Request):
 
     idClient = result[0]
 
-    print(idClient)
     # Query di selezione dei campi Nome e QuantitaKg dalla tabella Colori
     query = "SELECT * FROM Ordini Where Cliente = %s"
 
@@ -552,6 +548,5 @@ async def get_ordini(request: Request):
         ordini.append(ordine)
 
     response = {"Ordini": ordini}
-    print(response)
     # Restituzione della lista di colori come JSON
     return response

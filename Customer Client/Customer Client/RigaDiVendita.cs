@@ -42,8 +42,6 @@ namespace Customer_Client
         {
             Console.WriteLine(" - " + prodotto.tipoProdotto + " " + prodotto.Nome + ", " + QuantitaKg + "Kg, " + Importo + " Euro");
         }
-
-        //public 
     }
 
 }

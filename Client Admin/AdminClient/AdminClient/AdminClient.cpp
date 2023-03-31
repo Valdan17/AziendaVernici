@@ -732,7 +732,12 @@ void menuColori() {
             "3. Aggiorna quantita' colori in magazzino\n"
             "Altro. Esci" << endl;
 
-        cin >> input;
+        getline(cin, input);
+
+        if (input == "") {
+            pulisciSchermo();
+            return;
+        }
 
         try {
             scelta = stoi(input);
@@ -772,7 +777,12 @@ void menuAdditivi() {
             "3. Aggiorna quantita' additivi in magazzino\n"
             "Altro. Esci" << endl;
 
-        cin >> input;
+        getline(cin, input);
+
+        if (input == "") {
+            pulisciSchermo();
+            return;
+        }
 
         try {
             scelta = stoi(input);
@@ -813,7 +823,12 @@ void menuVernici() {
             "4. Inizia produzione di vernice\n"
             "Altro. Esci" << endl;
 
-        cin >> input;
+        getline(cin, input);
+
+        if (input == "") {
+            pulisciSchermo();
+            return;
+        }
 
         try {
             scelta = stoi(input);
@@ -846,7 +861,6 @@ void menuVernici() {
     } while (scelta < 4);
 }
 
-
 int main() {
     string input;
     int scelta;
@@ -858,7 +872,10 @@ int main() {
             "3. Gestione Vernici\n"
             "Altro. Esci" << endl;
 
-        cin >> input;
+        getline(cin, input);
+
+        if (input == "")
+            return 0;
 
         try {
             scelta = stoi(input);

@@ -16,14 +16,6 @@ namespace Customer_Client
         private static Dictionary<int, Ordine> ordini;
         private static List<Vernice> vernici = new List<Vernice>();
 
-        /*
-        public Dictionary<int, Ordine> ordini
-        {
-            get { return preleva 
-            }
-        }
-        */
-
         public static List<Vernice> Vernici
         {
             get { return vernici; }
@@ -57,31 +49,6 @@ namespace Customer_Client
                 vernici.Add(vernice);
             }
         }
-
-        /*
-        public static async Task PrelevaVernici()
-        {
-            vernici.Clear();
-
-            using (var client = new HttpClient())
-            {
-                var response = await client.GetAsync("http://localhost:8000/vernici");
-                var jsonResponse = await response.Content.ReadAsStringAsync();
-
-                // Analizza il JSON e estrae la lista di vernici
-                var result = JsonConvert.DeserializeObject<Dictionary<string, List<Dictionary<string, object>>>>(jsonResponse);
-                var jsonVernici = (List<Dictionary<string, object>>)result["vernici"];
-
-                // Scansiona ogni vernice nel JSON e crea un nuovo oggetto Vernice da salvare nella lista delle vernici
-                foreach (var jsonVernice in jsonVernici)
-                {
-                    var vernice = new Vernice(Convert.ToInt32(jsonVernice["ID"]), (string)jsonVernice["nome"], Convert.ToSingle(jsonVernice["quantitaKg"]), Convert.ToSingle(jsonVernice["PrezzoKg"]));
-                    vernici.Add(vernice);
-                }
-            }
-        }
-        */
-
         public static async Task VisualizzaVernici()
         {
             if (vernici.Count > 0)
