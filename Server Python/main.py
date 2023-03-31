@@ -123,7 +123,7 @@ async def put_colori(request: Request):
 
         cursor.close()
         conn.close()
-        return JSONResponse(content="Quantita' colore correttamente")
+        return JSONResponse(content="Quantita' colore aggiunta correttamente")
 
     except Exception as e:
         logging.error("Errore durante l'aggiornamento del database", e)
@@ -215,7 +215,7 @@ async def put_additivi(request: Request):
 
         cursor.close()
         conn.close()
-        return JSONResponse(content="Quantita' additivo correttamente")
+        return JSONResponse(content="Quantita' additivo aggiunta correttamente")
 
     except Exception as e:
         logging.error("Errore durante l'aggiornamento del database", e)

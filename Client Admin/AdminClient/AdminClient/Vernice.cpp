@@ -26,7 +26,7 @@ void Vernice::stampaFormula() const {
 }
 
 void Vernice::stampaFormulaConQuantitaKg() const {
-	cout << "Composizione vernice " << nome << ":" << endl;
+	cout << "\nComposizione vernice " << nome << ":" << endl;
 	for (elementoFormula elementoFormula : formula) {
 		cout << " - " << elementoFormula.percentuale << "% " << elementoFormula.componente->getNome() << " (" << elementoFormula.componente->getQuantitaKg() << " Kg disponibili)" << endl;
 	}

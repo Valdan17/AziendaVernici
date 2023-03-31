@@ -697,8 +697,6 @@ void aggiornaQuantitaVernice() {
                     j = verniceDaProdurre.toJson();
                     j["ID"] = idVernice;
 
-                    verniceDaProdurre.stampaFormulaConQuantitaKg();
-
                     cout << "\n";
                     put("http://127.0.0.1:8000/vernici", j);
                 }
@@ -732,12 +730,7 @@ void menuColori() {
             "3. Aggiorna quantita' colori in magazzino\n"
             "Altro. Esci" << endl;
 
-        getline(cin, input);
-
-        if (input == "") {
-            pulisciSchermo();
-            return;
-        }
+        cin >> input;
 
         try {
             scelta = stoi(input);
@@ -777,12 +770,7 @@ void menuAdditivi() {
             "3. Aggiorna quantita' additivi in magazzino\n"
             "Altro. Esci" << endl;
 
-        getline(cin, input);
-
-        if (input == "") {
-            pulisciSchermo();
-            return;
-        }
+        cin >> input;
 
         try {
             scelta = stoi(input);
@@ -823,12 +811,7 @@ void menuVernici() {
             "4. Inizia produzione di vernice\n"
             "Altro. Esci" << endl;
 
-        getline(cin, input);
-
-        if (input == "") {
-            pulisciSchermo();
-            return;
-        }
+        cin >> input;
 
         try {
             scelta = stoi(input);
@@ -872,10 +855,7 @@ int main() {
             "3. Gestione Vernici\n"
             "Altro. Esci" << endl;
 
-        getline(cin, input);
-
-        if (input == "")
-            return 0;
+        cin >> input;
 
         try {
             scelta = stoi(input);
