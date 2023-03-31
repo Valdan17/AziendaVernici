@@ -38,14 +38,6 @@ static size_t cb(void* data, size_t size, size_t nmemb, void* clientp)
 }
 
 /*
-size_t write_callback(char* ptr, size_t size, size_t nmemb, void* userdata)
-{
-    ((std::string*)userdata)->append(ptr, size * nmemb);
-    return size * nmemb;
-}
-*/
-
-/*
 template<typename T>
 void stampa(map<int, T>& prodotti) {
     static_assert(std::is_base_of<ProdottoIndustriale, T>::value, "Il tipo non è correttamente convertibile");
@@ -220,7 +212,8 @@ void inserisciAdditivo() {
     cleanBuffer();
     getline(cin, nomeAdditivo);
     if (nomeAdditivo == "") {
-        cout << "Il campo nome non deve essere vuoto" << endl;
+        pulisciSchermo();
+        cout << "\nIl campo nome non deve essere vuoto" << endl;
         return;
     }
     cout << " - Kg: ";
@@ -247,11 +240,15 @@ void inserisciAdditivo() {
     if (confermaInserimentoAdditivo == "1") {
         nuovoAdditivo = new Additivo(nomeAdditivo, quantitaKg);
         jsonNuovoAdditivo = nuovoAdditivo->toJson();
+        cout << "\n";
         post(url, jsonNuovoAdditivo);
         delete nuovoAdditivo;
     }
-    else
+    else {
         cout << "Inserimento annullato\n";
+    }
+    cout << "\n";
+
 }
 
 void aggiornaQuantitaAdditivo() {
@@ -288,11 +285,13 @@ void aggiornaQuantitaAdditivo() {
         additivoDaAggiornare += quantitaDaAggiungere;
         j = additivoDaAggiornare.toJson();
         j["ID"] = idAdditivo;
+        cout << "\n";
         put("http://127.0.0.1:8000/additivi", j);
     }
     else {
         cout << "Il colore selezionato non esiste nel magazzino\n";
     }
+    cout << "\n";
 }
 
 
@@ -342,7 +341,8 @@ void inserisciColore() {
     cleanBuffer();
     getline(cin, nomeColore);
     if (nomeColore == "") {
-        cout << "Il campo nome non deve essere vuoto" << endl;
+        pulisciSchermo();
+        cout << "\nIl campo nome non deve essere vuoto" << endl;
         return;
     }
     cout << " - Kg: ";
@@ -368,10 +368,14 @@ void inserisciColore() {
     if (confermaInserimentoColore == "1") {
         nuovoColore = new Colore(nomeColore, quantitaKg);
         jsonNuovoColore = nuovoColore->toJson();
+        cout << "\n";
         post(url, jsonNuovoColore);
         delete nuovoColore;
-    } else 
+    }
+    else {
         cout << "Inserimento annullato\n";
+    }
+    cout << "\n";
 }
 
 void aggiornaQuantitaColore() {
@@ -402,6 +406,7 @@ void aggiornaQuantitaColore() {
             coloreDaAggiornare += quantitaDaAggiungere;
             j = coloreDaAggiornare.toJson();
             j["ID"] = idColore;
+            cout << "\n";
             put("http://127.0.0.1:8000/colori", j);
         }
         else {
@@ -413,6 +418,7 @@ void aggiornaQuantitaColore() {
         cout << "\nErrore: quantita' non valida" << endl;
         return;
     }
+    cout << "\n";
 }
 
 
@@ -481,7 +487,8 @@ void inserisciVernice() {
     cleanBuffer();
     getline(cin, nomeVernice);
     if (nomeVernice == "") {
-        cout << "Il campo nome non deve essere vuoto" << endl;
+        pulisciSchermo();
+        cout << "\nIl campo nome non deve essere vuoto" << endl;
         return;
     }
     cout << " - Prezzo di vendita al Kg: ";
@@ -606,12 +613,17 @@ void inserisciVernice() {
     }
     cout << "\nInserisci 1 per confermare la creazione della vernice, altrimenti per uscire" << endl;
     cin >> inserimento;
+    pulisciSchermo();
+
     if (inserimento == "1") {
         Vernice v(nomeVernice, prezzoKg, formula);
-        cout << v.toJson();
+        cout << "\n";
         post("http://127.0.0.1:8000/vernici", v.toJson());
     }
-    pulisciSchermo();
+    else {
+        cout << "\nInserimento annullato";
+    }
+    cout << "\n";
 }
 
 void visualizzaComposizioneVernice() {
@@ -687,6 +699,7 @@ void aggiornaQuantitaVernice() {
 
                     verniceDaProdurre.stampaFormulaConQuantitaKg();
 
+                    cout << "\n";
                     put("http://127.0.0.1:8000/vernici", j);
                 }
                 else {
@@ -703,6 +716,7 @@ void aggiornaQuantitaVernice() {
         cout << "\nErrore: quantita' non valida" << endl;
         return;
     }
+    cout << "\n";
 }
 
 

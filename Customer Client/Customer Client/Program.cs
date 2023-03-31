@@ -1,9 +1,12 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Specialized;
 using System.Dynamic;
 using System.Net.Http.Json;
+using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.Json;
 using System.Transactions;
 using System.Xml.Resolvers;
 
@@ -18,6 +21,14 @@ namespace Customer_Client
             using var client = new HttpClient();
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             var response = await client.PostAsync(url, content);
+            return response;
+        }
+
+        static async Task<HttpResponseMessage> Put(string url, string json)
+        {
+            using var client = new HttpClient();
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await client.PutAsync(url, content);
             return response;
         }
 
@@ -42,6 +53,7 @@ namespace Customer_Client
                 Console.Write("\n***MENU CLIENTE***: \n" +
                     " - 1. Visualizza vernici\n" +
                     " - 2. Effettua un ordine\n" +
+                    " - 3. Visualizza ordini effettuati\n" +
                     " - Altro. Esci\n" +
                     "Scelta: ");
 
@@ -64,10 +76,59 @@ namespace Customer_Client
                         await EffettuaOrdine();
                         break;
 
+                    case 3:
+                        await VisualizzaOrdiniEffettuati();
+                        break;
+
                     default:
                         Console.WriteLine("\nUscita...");
                         return;
                 }
+            }
+        }
+
+        static async Task VisualizzaOrdiniEffettuati()
+        {
+            try
+            {
+                var response = await Put("http://localhost:8000/ordini", JsonConvert.SerializeObject(usernameUtenteLoggato));
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseJson = await response.Content.ReadAsStringAsync();
+
+                    JObject jsonObject = JObject.Parse(responseJson);
+
+                    JArray ordiniArray = (JArray)jsonObject["Ordini"];
+
+                    if (!(ordiniArray.Count <= 0))
+                    {
+                        Console.WriteLine("\nOrdini effettuati: ");
+                        foreach (JObject ordine in ordiniArray)
+                        {
+                            int id = (int)ordine["ID"];
+                            DateTime data = DateTime.Parse((string)ordine["Data"]);
+                            float importo = (float)ordine["Importo"];
+                            string completato = (bool)ordine["Completato"] ? "COMPLETATO" : "PENDENTE";
+
+                            Console.WriteLine($" - N° ordine: {id}, effettuato il: {data.ToShortDateString()}, importo: {importo} euro, [{completato}]");
+                        }
+                    } else
+                    {
+                        Console.WriteLine("\nNon sono ancora stati effettuati ordini");
+                        return;
+                    }
+
+                }
+                else
+                {
+                    throw new Exception();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Clear();
+                Console.WriteLine("\nErrore di connessione al server");
             }
         }
 
@@ -245,20 +306,16 @@ namespace Customer_Client
                             string json = JsonConvert.SerializeObject(ordineDaEffettuare);
 
                             var response = await Post("http://localhost:8000/ordini", json);
-                            //Console.WriteLine("Response che ricevo e': " + response);
 
                             if (response.IsSuccessStatusCode)
                             {
-                                var responseJson = await response.Content.ReadAsStringAsync();
-                                Console.WriteLine("Response che converto in string e': " + responseJson);
-
+                                Console.Clear();
+                                Console.WriteLine("\nOrdine effettuato correttamente");
                             }
                             else
                             {
                                 throw new Exception();
                             }
-
-                            Console.WriteLine(response);
                         } else
                         {
                             Console.Clear();

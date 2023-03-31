@@ -420,26 +420,6 @@ async def update_item(request: Request):
     return JSONResponse(content={"message": "Errore durante la produzione"})
 
 
-# # Endpoint per l'inserimento degli ordini nel database
-# @app.post("/ordini")
-# async def post_ordini(request: Request):
-#     body = await request.json()
-#     print(body)
-#
-#     try:
-#         conn = mysql.connector.connect(
-#             host="localhost",
-#             user="root",
-#             database="aziendavernici"
-#         )
-#
-#         conn.close()
-#         return JSONResponse(content="Ordine inserito correttamente nel database")
-#     except Exception as e:
-#         logging.error("Errore durante l'inserimento nel database", e)
-#
-#         return JSONResponse(content={"message": "Errore durante l'elaborazione dell'ordine nel database"})
-
 # Modello Pydantic per il JSON dell'Ordine
 class jsonVernice(BaseModel):
     tipoProdotto: str
@@ -458,14 +438,6 @@ class jsonOrdine(BaseModel):
     RigheDiVendita: List[jsonRigaDiVendita]
     ImportoTotale: float
 
-
-
-# class Ordine:
-#     def __init__(self, cliente: int, importoTotale: float, righeDiVendita: List[RigaDiVendita]):
-#         self.cliente = cliente;
-#         self.importoTotale = importoTotale
-#         self.righe_di_vendita = righeDiVendita
-#         self.
 
 
 # Endpoint per l'inserimento di un nuovo ordine
@@ -531,3 +503,55 @@ async def inserisci_ordine(ordine: jsonOrdine):
         logging.error("Errore durante l'inserimento nel database", e)
 
         return JSONResponse(content={"message": "Errore durante l'elaborazione dell'ordine nel database"})
+
+# Endpoint per ottenere gli ordini dal database
+@app.put("/ordini")
+async def get_ordini(request: Request):
+    username = await request.json()
+    print(username)
+    # Connessione al database
+    conn = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        database="aziendavernici"
+    )
+
+    # Creazione del cursore per effettuare le query
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT ID FROM Clienti WHERE Username = %s", (username,))
+    result = cursor.fetchone()
+
+    if not result:
+        raise HTTPException(status_code=404, detail="Cliente non trovato")
+
+    idClient = result[0]
+
+    print(idClient)
+    # Query di selezione dei campi Nome e QuantitaKg dalla tabella Colori
+    query = "SELECT * FROM Ordini Where Cliente = %s"
+
+    # Esecuzione della query
+    cursor.execute(query, (idClient, ))
+
+    # Recupero dei risultati
+    results = cursor.fetchall()
+
+    # Chiusura della connessione e del cursore
+    cursor.close()
+    conn.close()
+
+    # Creazione della lista di colori da restituire come JSON
+    ordini = []
+    for result in results:
+        ID = result[0]
+        data = result[2].date()
+        importo = result[3]
+        completato = True if result[4] == 1 else False
+        ordine = {"ID": ID, "Data": data, "Importo": importo, "Completato": completato}
+        ordini.append(ordine)
+
+    response = {"Ordini": ordini}
+    print(response)
+    # Restituzione della lista di colori come JSON
+    return response
